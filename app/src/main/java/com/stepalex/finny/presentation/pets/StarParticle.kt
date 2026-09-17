@@ -8,6 +8,11 @@ import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameMillis
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.withTransform
 import kotlin.random.Random
 
 
@@ -30,8 +35,8 @@ class StarParticle {
 
     // Метод для безопасного рождения звезды, когда размеры холста уже известны
     fun reset(w: Float, h: Float) {
-        x = Random.nextFloat() * w *0.9f + w*0.05f
-        y = Random.nextFloat() * h *0.5f
+        x = Random.nextFloat() * w * 0.9f + w * 0.05f
+        y = Random.nextFloat() * h * 0.5f
         vx = (Random.nextFloat() - 0.5f) * 0.05f
         vy = (Random.nextFloat() - 0.5f) * 0.05f
         size = w * (0.03f + Random.nextFloat() * 0.03f)
@@ -91,4 +96,33 @@ fun rememberBunnyStars(mood: PetMood): List<StarParticle> {
         }
     }
     return stars
+}
+
+/**
+ * Отрисовка звездочек
+ */
+fun DrawScope.drawGoldenStar(star: StarParticle) {
+    val r = star.size / 2f
+    val goldColor = Color(0xFFFFD700) // Настоящий золотой цвет (Gold)
+
+    val starPath = Path().apply {
+        // Стартуем с верхней вершины звезды
+        moveTo(0f, -r)
+        // Правый внутренний изгиб Безье к центру и переход на правую вершину
+        quadraticTo(0f, 0f, r, 0f)
+        // Нижний изгиб к нижней вершине
+        quadraticTo(0f, 0f, 0f, r)
+        // Левый изгиб к левой вершине
+        quadraticTo(0f, 0f, -r, 0f)
+        // Замыкаем изгиб обратно к верхней вершине
+        quadraticTo(0f, 0f, 0f, -r)
+    }
+
+    // Рисуем звезду с индивидуальным смещением, поворотом и прозрачностью
+    withTransform({
+        translate(left = star.x, top = star.y)
+        rotate(degrees = star.angle, pivot = Offset.Zero)
+    }) {
+        drawPath(path = starPath, color = goldColor, alpha = star.alpha)
+    }
 }

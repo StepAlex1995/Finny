@@ -1,8 +1,7 @@
 package com.stepalex.finny.presentation.pets
 
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.FastOutLinearInEasing
-import androidx.compose.animation.core.LinearOutSlowInEasing
+import android.graphics.BlurMaskFilter
+import android.graphics.Paint
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
@@ -16,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameMillis
@@ -25,7 +25,6 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.RoundRect
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Path
@@ -38,100 +37,73 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
-import kotlin.math.PI
-import kotlin.math.max
-import kotlin.math.sin
 import kotlin.time.Duration.Companion.milliseconds
-
-enum class PetStage {
-    Baby,
-    Teenager,
-    Adult
-}
-
-enum class PetMood {
-    Sad,
-    Normal,
-    Happy,
-    Sleep
-}
 
 private val OutlineColor = Color.Black
 private val FillColor = Color.White
 private val BlushColor = Color(0xFFFEE1E1)
 
 @Composable
-fun Bunny(stage: PetStage, mood: PetMood, modifier: Modifier = Modifier) {
+fun Bunny(
+    stage: PetStage,
+    mood: PetMood,
+    action: PetAction = PetAction.Pet,
+    touchOffset: Offset?,
+    modifier: Modifier = Modifier,
+    petListener: PetListener
+) {
     // --- Создаем транзишн, который следит за изменением состояния stage ---
     val transition = updateTransition(targetState = stage, label = "BunnyStageTransition")
     val moodTransition = updateTransition(targetState = mood, label = "BunnyMoodTransition")
     // --- РОТ ---
     val mouthState = rememberBunnyMouthState(moodTransition)
-    // Подключаем систему золотых звёзд
-    var canvasWidth by remember { mutableFloatStateOf(0f) }
-    var canvasHeight by remember { mutableFloatStateOf(0f) }
-    val stars = rememberBunnyStars(mood = mood)
-    // Получаем список универсальных частиц (звёзды или Z-z-z)
-    val particles = rememberPetParticles(mood = mood)
+    // --- СОСТОЯНИЯ КОРМЛЕНИЯ И ЖЕВАНИЯ ---
+    var isChewing by remember { mutableStateOf(false) }     // Флаг: кролик жует (блокирует тач)
+    var isSatisfied by remember { mutableStateOf(false) }   // Флаг: кролик сыт (глаза дугами)
+    // Переменная, которая запоминает, насколько сильно был открыт рот прямо перед отрывом пальца
+    var lastMouthProgressBeforeRelease by remember { mutableFloatStateOf(0f) }
 
-    // --- Дыхание ---
-    // Плавно анимируем саму целевую скорость дыхания (время одного полуцикла в мс)
-    // Благодаря этому при смене стадии скорость дыхания переключится не резко, а плавно
-    val currentBreedDuration by transition.animateFloat(
-        transitionSpec = { tween(durationMillis = 600) },
-        label = "BreedDuration"
-    ) { targetStage ->
-        val baseSpeed = when (targetStage) {
-            PetStage.Baby -> 800f
-            PetStage.Teenager -> 1000f
-            PetStage.Adult -> 1200f
-        }
-        // Если кролик спит — он дышит глубже и медленнее (+400мс), если радуется — чаще (-200мс)
-        when (mood) {
-            PetMood.Sleep -> baseSpeed + 400f
-            PetMood.Happy -> baseSpeed - 200f
-            PetMood.Sad -> baseSpeed + 100f
-            PetMood.Normal -> baseSpeed
-        }
-    }
-    // Храним текущую фазу дыхания (угол от 0 до 2*PI)
-    var breathingPhase by remember { mutableFloatStateOf(0f) }
+    // Прогресс открытия рта: 0f (закрыт) до 1f (открыт на максимум)
+    var eatMouthOpenProgress by remember { mutableFloatStateOf(0f) }
 
-    // Бесконечный цикл, который обновляет фазу на каждом кадре экрана с учетом текущей скорости
-    LaunchedEffect(Unit) {
-        var lastTime = withFrameMillis { it }
-        while (true) {
-            withFrameMillis { currentTime ->
-                val deltaTime = currentTime - lastTime
-                lastTime = currentTime
+    // Переменная для синусоидальной анимации жевания рта Безье
+    var chewingAnimationTime by remember { mutableFloatStateOf(0f) }
 
-                // Вычисляем, на сколько сдвинуть фазу за этот кадр.
-                // Формула преобразует длительность полуцикла (currentBreedDuration) в скорость изменения угла синуса
-                val phaseSpeed = (PI / currentBreedDuration).toFloat()
-                breathingPhase = (breathingPhase + phaseSpeed * deltaTime) % (2f * PI.toFloat())
+    // Бесконечный цикл для анимации движения челюстей во время жевания
+    LaunchedEffect(isChewing, mood) {
+        if (isChewing || mood == PetMood.Sleep) {
+            var lastTime = withFrameMillis { it }
+            while (isChewing || mood == PetMood.Sleep) {
+                withFrameMillis { currentTime ->
+                    val deltaTime = currentTime - lastTime
+                    lastTime = currentTime
+                    // Скорость жевания: делаем рот быстрым и забавным
+                    chewingAnimationTime =
+                        (chewingAnimationTime + 0.02f * deltaTime) % (2f * Math.PI.toFloat())
+                }
             }
+        } else {
+            chewingAnimationTime = 0f
         }
     }
-    // Используем функцию sin() для создания идеальной плавной волны «вдох-выдох» от 0.0f до 1.0f
-    // sin дает диапазон от -1 до 1, приводим его к 0..1
-    val breathProgress = (sin(breathingPhase) + 1f) / 2f
 
-    // Вычисляем финальные коэффициенты масштаба на основе прогресса синуса
-    val breathingScaleY = 1.0f + (0.02f * breathProgress)
-    val breathingScaleX = 1.0f + (0.015f * breathProgress)
+    // ПОДКЛЮЧАЕМ СИСТЕМУ ДЫХАНИЯ (Всего одна строчка!)
+    val breathing = rememberPetBreathing(transition = transition, mood = mood)
 
     // Плавно анимируем базовую прозрачность ореола от настроения
     val haloAlphaBase by moodTransition.animateFloat(
         transitionSpec = { tween(durationMillis = 500) }, label = "HaloAlpha"
     ) { targetMood ->
-        if (targetMood == PetMood.Happy) 0.5f else 0f
+        if (targetMood == PetMood.Happy) 0.75f else 0f
     }
     // Связываем прозрачность ореола с дыханием кролика для эффекта пульсации:
     // На пике вдоха (breathProgress = 1) сияние становится чуть ярче
-    val finalHaloAlpha = haloAlphaBase * (0.7f + 0.3f * breathProgress)
+    val finalHaloAlpha = haloAlphaBase * (0.8f + 0.3f * breathing.progress)
 
 
     // --- Анимируем коэффициент масштаба в зависимости от целевой стадии ---
@@ -232,32 +204,9 @@ fun Bunny(stage: PetStage, mood: PetMood, modifier: Modifier = Modifier) {
         if (targetStage == PetStage.Adult) 0.97f else 0.87f
     }
 
-    // Вызов стейта глаз и бровей:
+    // Вызов стейта глаз
     val eyesState = rememberBunnyEyesState(moodTransition)
-    // Храним прогресс моргания (0f - открыты, 1f - закрыты)
-    val blinkProgress = remember { Animatable(0f) }
-    // Бесконечный цикл периодического моргания
-    LaunchedEffect(mood) {
-        if (mood != PetMood.Sleep) {
-            while (true) {
-                // Ждем 3.5 секунды между морганиями
-                delay(2500.milliseconds)
 
-                // Быстро закрываем глаза (80 миллисекунд)
-                blinkProgress.animateTo(
-                    targetValue = 1f,
-                    animationSpec = tween(durationMillis = 80, easing = FastOutLinearInEasing)
-                )
-                // Быстро открываем глаза (80 миллисекунд)
-                blinkProgress.animateTo(
-                    targetValue = 0f,
-                    animationSpec = tween(durationMillis = 80, easing = LinearOutSlowInEasing)
-                )
-            }
-        } else {
-            blinkProgress.snapTo(0f)
-        }
-    }
     // Анимируем плавное закрытие глаз при засыпании от 0f до 1f
     val sleepBlinkProgress by moodTransition.animateFloat(
         transitionSpec = { tween(durationMillis = 500) }, label = "SleepBlinkProgress"
@@ -265,17 +214,71 @@ fun Bunny(stage: PetStage, mood: PetMood, modifier: Modifier = Modifier) {
         if (targetMood == PetMood.Sleep) 1f else 0f
     }
 
-    // Итоговый прогресс: если кролик спит, тут всегда будет плавно нарастать 1f.
-    // Если бодрствует — значение будет полностью управляться вашим морганием.
-    val finalBlinkProgress = maxOf(sleepBlinkProgress, blinkProgress.value)
+    // Инициализируем вынесенный стейт-файл
+    val interactions = rememberPetInteractionsState(
+        stage = stage, mood = mood, action = action, touchOffset = touchOffset,
+        stageScale = stageScale, sleepBlinkProgress = sleepBlinkProgress,
+        mouthState = mouthState, petListener = petListener,
+        isChewing = isChewing,
+        initialEatMouthOpenProgress = eatMouthOpenProgress,
+        initialLastMouthProgressBeforeRelease = lastMouthProgressBeforeRelease,
+        isSatisfied = isSatisfied
+    )
 
+    // Специальный триггер для запуска еды, защищённый от прерывания корутины
+    var eatTrigger by remember { mutableStateOf(0) }
+    // СБРОСЫ жевания
+    LaunchedEffect(action, mood, stage) {
+        isChewing = false
+        isSatisfied = false
+    }
+    // Блок отслеживания отрыва пальца: реагирует строго на изменение touchOffset,
+    // но выполняет только мгновенный взвод триггера без тяжелых delay
+    LaunchedEffect(touchOffset) {
+        if (action == PetAction.Eat && touchOffset == null && interactions.lastMouthProgressBeforeRelease > 0.8f && !isChewing) {
+            interactions.updateReleaseProgress(0f) // Сбрасываем пиковое значение рта
+            eatTrigger++                           // Мгновенно взводим триггер еды!
+        }
+    }
+    // ЖЕЛЕЗНЫЙ ТАЙМЕР ЕДЫ: Слушает ТОЛЬКО eatTrigger.
+    // Пока тикают delay, повторные касания экрана больше не могут отменить или сбросить этот цикл!
+    LaunchedEffect(eatTrigger) {
+        if (eatTrigger > 0) {
+            isChewing = true          // Включаем фазу жевания на 1.5 секунды
+
+            delay(1500.milliseconds)               // Ровно 1.5 секунды идет анимация жевания губами Безье
+            isChewing = false
+
+            isSatisfied = true        // Включаем фазу блаженства сытости на 1 секунду
+            delay(1000.milliseconds)
+            isSatisfied = false       // Кролик снова открывает глазки
+
+            if (mood == PetMood.Sad) {
+                petListener.updatePetMod(newMode = PetMood.Normal)
+            }
+        }
+    }
+    // Синхронизируем обратно локальные переменные для движка челюстей
+    eatMouthOpenProgress = interactions.eatMouthOpenProgress
+    lastMouthProgressBeforeRelease = interactions.lastMouthProgressBeforeRelease
+
+
+    // Системы частиц теперь берут флаги из объекта interactions
+    val stars = rememberBunnyStars(mood = mood)
+    val zzzList = rememberPetZzz(mood = mood)
+    val hearts = rememberPetHearts(isEnjoyingPet = interactions.isEnjoyingPet)
 
     Canvas(
         modifier = modifier
             .fillMaxSize()
             .padding(16.dp)
             .aspectRatio(1f)
+            .onGloballyPositioned { layoutCoordinates ->
+                interactions.updatePosition(layoutCoordinates.positionInWindow())
+            }
     ) {
+        // Сохраняем точные пиксельные размеры холста для расчётов выше
+        interactions.updateSize(size.width, size.height)
         val w = size.width
         val h = size.height
 
@@ -296,8 +299,8 @@ fun Bunny(stage: PetStage, mood: PetMood, modifier: Modifier = Modifier) {
         // Относительно нижней части холста (чтобы кролик «дышал» вверх, опираясь на лапки)
         withTransform({
             // Перемножаем базовый масштаб стадии на текущую фазу дыхания
-            val finalScaleX = stageScale * breathingScaleX
-            val finalScaleY = stageScale * breathingScaleY
+            val finalScaleX = stageScale * breathing.scaleX
+            val finalScaleY = stageScale * breathing.scaleY
             scale(scaleX = finalScaleX, scaleY = finalScaleY, pivot = Offset(w / 2f, h * 0.95f))
         }) {
             //поднимаем отрисовку выше, чтоб потом дорисовать туловище
@@ -322,49 +325,66 @@ fun Bunny(stage: PetStage, mood: PetMood, modifier: Modifier = Modifier) {
                     armBottom = armBottom,
                     haloAlpha = finalHaloAlpha
                 )
+                // Отрисовка щечек
+                drawPetChecks(w,h,BlushColor)
                 // Отрисовка элементов мордочки
-                drawBunnyFace(
+                drawPetFace(
                     w,
                     h,
                     mouthStrokeStyle,
                     strokeStyle,
-                    finalBlinkProgress,
+                    interactions.finalBlinkProgress,
                     mood = mood,
                     mouthState = mouthState,
-                    eyesState = eyesState
+                    eyesState = eyesState,
+                    leftLookX = interactions.leftX * w,
+                    leftLookY = interactions.leftY * h,
+                    rightLookX = interactions.rightX * w,
+                    rightLookY = interactions.rightY * h,
+                    eatOpenProgress = eatMouthOpenProgress,
+                    isChewing = isChewing,
+                    chewingPhase = chewingAnimationTime
                 )
                 if (babyFeetProgress > 0f) {
                     drawBunnyFeet(w, h, strokeStyle, babyFeetProgress)
                 }
             }
         }
-        /*// Логика рождения и отрисовка звезд прямо на холсте
-        stars.forEach { star ->
-            // Если мы в режиме Happy и звезда мертва — рождаем её, зная точные размеры w и h холста
-            if (mood == PetMood.Happy && !star.isAlive) {
+        // ================= ИНТЕГРАЦИЯ ЗВЁЗД =================
+        // Ограничиваем количество активных звезд до 10 штук
+        val maxStarsLimit = 10
+
+        stars.forEachIndexed { index, star ->
+            // Рождаем звезду, только если мы в Happy, она мертва и укладывается в лимит
+            if (mood == PetMood.Happy && !star.isAlive && index < maxStarsLimit) {
                 star.reset(w, h)
             }
 
-            // Рисуем только те звезды, у которых альфа больше нуля
+            // Отрисовываем звезду, если её альфа больше нуля
             if (star.alpha > 0f) {
-                drawGoldenStar(star)
+                drawGoldenStar(star) // Передаем объект StarParticle в функцию отрисовки
             }
-        }*/
-        // Логика рождения и отрисовки частиц поверх кролика
-        particles.forEachIndexed { index, p ->
-            // Рождаем частицу, если мы в активном режиме и она мертва
-            if ((mood == PetMood.Happy || mood == PetMood.Sleep) && !p.isAlive) {
-                p.reset(w, h, index, stage, mood)
+        }
+        // --- ОТРИСОВКА БУКВ Z-z-z ---
+        val maxZzzLimit = 3
+        zzzList.forEachIndexed { index, p ->
+            if (mood == PetMood.Sleep && !p.isAlive && index < maxZzzLimit) {
+                p.reset(w, h, index) // Передаем w, h и index для очереди
             }
-
             if (p.alpha > 0f) {
-                if (p.text.isEmpty()) {
-                    // Если текста нет — рисуем золотую звезду (Ваша прежняя функция)
-                    drawGoldenStar(p)
-                } else {
-                    // Если текст есть — рисуем букву "Z"
-                    drawSleepLetter(p)
-                }
+                drawSleepLetter(p, BlushColor) // Твоя оригинальная функция белых букв с обводкой
+            }
+        }
+        // --- ОТРИСОВКА АЛЫХ СЕРДЕЧЕК ---
+        val maxHeartsLimit = 3
+        hearts.forEachIndexed { index, p ->
+            // Рождаем сердце, если кролик жмурится от ласки, оно мертво и входит в лимит
+            // Передаем w, h, index и АКТУАЛЬНЫЕ локальные пиксели пальца localTouchPixelX/Y
+            if (interactions.isEnjoyingPet && !p.isAlive && index < maxHeartsLimit) {
+                p.reset(w, h, index, interactions.localTouchPixelX, interactions.localTouchPixelY)
+            }
+            if (p.alpha > 0f) {
+                drawContourHeart(p) // Твоя оригинальная функция отрисовки алого сердца с контуром
             }
         }
     }
@@ -544,19 +564,20 @@ private fun DrawScope.drawBunnyBodyAndEars(
     }
     // --- ОТРИСОВКА СВЕТЯЩЕГОСЯ ОРЕОЛА (ПОД ТЕЛОМ) ---
     if (haloAlpha > 0f) {
-        val glowRadius = w * 0.16f // Радиус размытия ауры (6% от ширины)
+        val glowRadius = w * 0.26f // Радиус размытия ауры (6% от ширины)
         val glowColor = Color(0xFFFFEAA7) // Мягкий, пастельно-жёлтый светящийся оттенок
 
         // Рисуем размытый силуэт на родном nativeCanvas устройства
         drawContext.canvas.nativeCanvas.save()
 
-        val paint = android.graphics.Paint().apply {
+        val paint = Paint().apply {
             color = glowColor.toArgb()
             isAntiAlias = true
+            alpha = (haloAlpha * 255).toInt().coerceIn(0, 255)
             // Применяем фильтр размытия (работает на Android с выключенным аппаратным ускорением или на Canvas)
-            maskFilter = android.graphics.BlurMaskFilter(
+            maskFilter = BlurMaskFilter(
                 glowRadius,
-                android.graphics.BlurMaskFilter.Blur.NORMAL
+                BlurMaskFilter.Blur.NORMAL
             )
         }
 
@@ -636,190 +657,6 @@ private fun DrawScope.drawBunnyBodyAndEars(
 
 }
 
-/**
- * Отрисовка лица: щечки, глаза, ротик.
- */
-private fun DrawScope.drawBunnyFace(
-    w: Float,
-    h: Float,
-    mouthStrokeStyle: Stroke,
-    strokeStyle: Stroke,
-    blinkProgress: Float,
-    mood: PetMood,
-    mouthState: MouthState,
-    eyesState: EyesState
-) {
-    // Щечки
-    drawOval(
-        color = BlushColor,
-        topLeft = Offset(w * 0.17f, h * 0.60f),
-        size = Size(w * 0.16f, h * 0.13f)
-    )
-    drawOval(
-        color = BlushColor,
-        topLeft = Offset(w * 0.67f, h * 0.60f),
-        size = Size(w * 0.16f, h * 0.13f)
-    )
-
-    // --- Глаза ---
-    // Вычисляем размеры глаз с учетом моргания
-    val baseEyeRadius = w * 0.045f
-    // Высота глаза уменьшается до нуля при полном моргании (blinkProgress = 1f)
-    val eyeHeight = max(baseEyeRadius * 2f * (1f - blinkProgress), baseEyeRadius * 1.05f)
-    val eyeWidth = baseEyeRadius * 2f
-
-    val leftEyeCenter = Offset(w * 0.34f, h * 0.63f)
-    val rightEyeCenter = Offset(w * 0.66f, h * 0.63f)
-
-    if (blinkProgress < 0.95f) {
-        drawRoundRect(
-            color = OutlineColor,
-            topLeft = Offset(
-                leftEyeCenter.x - baseEyeRadius,
-                leftEyeCenter.y - (eyeHeight / 2f) + (h * eyesState.eyeTopInset)
-            ),
-            size = Size(eyeWidth, eyeHeight - h * eyesState.eyeTopInset),
-
-            cornerRadius = CornerRadius(
-                x = eyeWidth * 0.5f * max((1 - blinkProgress), 0.5f),
-                y = eyeHeight * 0.5f
-            )
-        )
-        drawRoundRect(
-            color = OutlineColor,
-            topLeft = Offset(
-                rightEyeCenter.x - baseEyeRadius,
-                rightEyeCenter.y - (eyeHeight / 2f) + (h * eyesState.eyeTopInset)
-            ),
-            size = Size(eyeWidth, eyeHeight - (h * eyesState.eyeTopInset)),
-
-            cornerRadius = CornerRadius(
-                x = eyeWidth * 0.5f * max((1 - blinkProgress), 0.5f),
-                y = eyeHeight * 0.5f
-            )
-        )
-
-        // Зрачки-блики (плавно исчезают по прозрачности, чтобы не вылезать за пределы сжимающегося глаза)
-        val pupilAlpha = (1f - blinkProgress).coerceIn(0f, 1f)
-        drawCircle(
-            color = Color.White,
-            radius = w * 0.015f,
-            center = Offset(
-                w * 0.35f + (w * eyesState.pupilOffsetX),
-                h * 0.62f + (h * eyesState.pupilOffsetY)
-            ),
-            alpha = pupilAlpha
-        )
-        drawCircle(
-            color = Color.White,
-            radius = w * 0.015f,
-            center = Offset(
-                w * 0.66f - (w * 0.01f + w * eyesState.pupilOffsetX),
-                h * 0.62f + (h * eyesState.pupilOffsetY)
-            ),
-            alpha = pupilAlpha
-        )
-    }else {
-        // ================= ГЛАЗА ЗАКРЫТЫ ВО СНЕ / МОРГАНИИ (Дуги выгнутые вниз) =================
-        // Вычисляем ширину дуги на основе радиуса глаза
-        val leftStartX = leftEyeCenter.x - baseEyeRadius
-        val leftEndX = leftEyeCenter.x + baseEyeRadius
-
-        val rightStartX = rightEyeCenter.x - baseEyeRadius
-        val rightEndX = rightEyeCenter.x + baseEyeRadius
-
-        // Опорная точка (Control Point) находится строго по центру глаза по X,
-        // и смещена НАВЕРХ по Y, чтобы притянуть кривую Безье и выгнуть её куполом (дугой вниз)
-        val controlY = leftEyeCenter.y - (baseEyeRadius * 0.7f)
-
-        val closedEyesPath = Path().apply {
-            // Левая спящая дуга
-            moveTo(leftStartX, leftEyeCenter.y)
-            quadraticTo(x1 = leftEyeCenter.x, y1 = controlY, x2 = leftEndX, y2 = leftEyeCenter.y)
-
-            // Правая спящая дуга
-            moveTo(rightStartX, rightEyeCenter.y)
-            quadraticTo(x1 = rightEyeCenter.x, y1 = controlY, x2 = rightEndX, y2 = rightEyeCenter.y)
-        }
-
-        // Рисуем дуги основным стилем линий (strokeStyle) с закруглёнными краями
-        drawPath(path = closedEyesPath, color = OutlineColor, style = strokeStyle)
-    }
-    // --- БРОВИ ДОМИКОМ (Проявляются только при грусти) ---
-    if (eyesState.browAlpha > 0f) {
-        val browWidth = w * 0.04f
-        val baseBrowY = h * 0.56f // Высота посадки бровей над глазами
-
-        // Левая бровь
-        val leftBrowPath = Path().apply {
-            // Внешний край (слева) зафиксирован
-            moveTo(leftEyeCenter.x - browWidth, baseBrowY)
-            // Внутренний край (справа, у носа) плавно приподнимается вверх на "домик"
-            quadraticTo(
-                x1 = leftEyeCenter.x, y1 = baseBrowY - (h * 0.01f),
-                x2 = leftEyeCenter.x + browWidth, y2 = baseBrowY - (h * eyesState.browInnerYOffset)
-            )
-        }
-
-        // Правая бровь
-        val rightBrowPath = Path().apply {
-            // Внутренний край (слева, у носа) плавно приподнимается вверх на "домик"
-            moveTo(rightEyeCenter.x - browWidth, baseBrowY - (h * eyesState.browInnerYOffset))
-            // Внешний край (справа) зафиксирован
-            quadraticTo(
-                x1 = rightEyeCenter.x, y1 = baseBrowY - (h * 0.01f),
-                x2 = rightEyeCenter.x + browWidth, y2 = baseBrowY
-            )
-        }
-
-        // Рисуем брови с толщиной рта (mouthStrokeStyle) и плавной прозрачностью
-        drawPath(
-            path = leftBrowPath,
-            color = OutlineColor,
-            style = mouthStrokeStyle,
-            alpha = eyesState.browAlpha
-        )
-        drawPath(
-            path = rightBrowPath,
-            color = OutlineColor,
-            style = mouthStrokeStyle,
-            alpha = eyesState.browAlpha
-        )
-    }
-
-    // --- АНИМИРОВАННЫЙ РОТ ---
-    // Рассчитываем ключевые точки на основе анимированных Float
-    val centerX = w * 0.50f
-    val centerY = h * mouthState.centerY
-
-    val leftCornerX = centerX - (w * mouthState.widthOffset)
-    val rightCornerX = centerX + (w * mouthState.widthOffset)
-    val cornersY = h * mouthState.cornerY
-
-    // Контрольные точки находятся посередине между центром и уголками по X
-    val leftControlX = (leftCornerX + centerX) / 2f
-    val rightControlX = (rightCornerX + centerX) / 2f
-    val controlY = h * mouthState.controlY
-
-    val mouthPath = Path().apply {
-        // 1. Левая половинка губы: стартуем из левого уголка, тянем к центру
-        moveTo(leftCornerX, cornersY)
-        // Левая половинка губы: тянем к центру
-        quadraticTo(
-            x1 = leftControlX, y1 = controlY, // Опорная точка
-            x2 = centerX, y2 = centerY        // Конечная точка под носом
-        )
-
-        // Правая половинка губы: от центра тянем к правому уголку
-        quadraticTo(
-            x1 = rightControlX, y1 = controlY, // Опорная точка
-            x2 = rightCornerX, y2 = cornersY   // Конечная точка
-        )
-    }
-
-    // Отрисовываем получившийся эластичный ротик
-    drawPath(path = mouthPath, color = OutlineColor, style = mouthStrokeStyle)
-}
 
 /**
  * Отрисовка лапок поверх готового тела.
@@ -850,91 +687,6 @@ private fun DrawScope.drawBunnyFeet(w: Float, h: Float, strokeStyle: Stroke, pro
     )
 }
 
-/**
- * Отрисовка звездочек
- */
-private fun DrawScope.drawGoldenStar(star: PetParticle) {
-    val r = star.size / 2f
-    val goldColor = Color(0xFFFFD700) // Настоящий золотой цвет (Gold)
-
-    val starPath = Path().apply {
-        // Стартуем с верхней вершины звезды
-        moveTo(0f, -r)
-        // Правый внутренний изгиб Безье к центру и переход на правую вершину
-        quadraticTo(0f, 0f, r, 0f)
-        // Нижний изгиб к нижней вершине
-        quadraticTo(0f, 0f, 0f, r)
-        // Левый изгиб к левой вершине
-        quadraticTo(0f, 0f, -r, 0f)
-        // Замыкаем изгиб обратно к верхней вершине
-        quadraticTo(0f, 0f, 0f, -r)
-    }
-
-    // Рисуем звезду с индивидуальным смещением, поворотом и прозрачностью
-    withTransform({
-        translate(left = star.x, top = star.y)
-        rotate(degrees = star.angle, pivot = Offset.Zero)
-    }) {
-        drawPath(path = starPath, color = goldColor, alpha = star.alpha)
-    }
-}
-
-/**
- * Отрисовка частиц рядом
- */
-private fun DrawScope.drawSleepLetter(p: PetParticle) {
-    drawContext.canvas.nativeCanvas.save()
-
-    // 1. НАСТРОЙКА КРАСКИ ДЛЯ ОБВОДКИ (Черный контур)
-    val strokePaint = android.graphics.Paint().apply {
-        color = Color.Black.toArgb() // белый цвет контура кролика
-        textSize = p.size
-        isAntiAlias = true
-        typeface = android.graphics.Typeface.create(
-            android.graphics.Typeface.DEFAULT,
-            android.graphics.Typeface.BOLD
-        )
-        alpha = (p.alpha * 255).toInt().coerceIn(0, 255)
-
-        // Включаем режим обводки
-        style = android.graphics.Paint.Style.STROKE
-        // Толщина обводки буквы (делаем чуть тоньше основной обводки кролика, чтобы текст читался)
-        strokeWidth = p.size * 0.15f
-        strokeJoin = android.graphics.Paint.Join.ROUND
-        strokeCap = android.graphics.Paint.Cap.ROUND
-    }
-
-    // 2. НАСТРОЙКА КРАСКИ ДЛЯ ЗАЛИВКИ (Белая серединка)
-    val fillPaint = android.graphics.Paint().apply {
-        color = BlushColor.toArgb() // Черный цвет заливки
-        textSize = p.size
-        isAntiAlias = true
-        typeface = android.graphics.Typeface.create(
-            android.graphics.Typeface.DEFAULT,
-            android.graphics.Typeface.BOLD
-        )
-        alpha = (p.alpha * 255).toInt().coerceIn(0, 255)
-
-        // Включаем режим сплошной заливки
-        style = android.graphics.Paint.Style.FILL
-    }
-
-    // Трансформируем холст (смещение и поворот)
-    withTransform({
-        translate(left = p.x, top = p.y)
-        rotate(degrees = p.angle, pivot = Offset.Zero)
-    }) {
-        // Вычисляем смещение для центрирования текста по оси X
-        val textOffsetX = -p.size / 3f
-
-        // Сначала рисуем толстый черный контур
-        drawContext.canvas.nativeCanvas.drawText(p.text, textOffsetX, 0f, strokePaint)
-        // Затем поверх него накладываем белую начинку
-        drawContext.canvas.nativeCanvas.drawText(p.text, textOffsetX, 0f, fillPaint)
-    }
-
-    drawContext.canvas.nativeCanvas.restore()
-}
 
 @Preview(showBackground = true, widthDp = 400, heightDp = 1200)
 @Composable
@@ -945,21 +697,38 @@ fun BunnyRoundRect1Preview() {
             stage = PetStage.Baby, modifier = Modifier
                 .fillMaxWidth(0.38f)
                 .weight(1f),
-            mood = PetMood.Sad
-        )
+            mood = PetMood.Sad,
+            touchOffset = null,
+            petListener = object : PetListener {
+                override fun updatePetMod(newMode: PetMood) {
 
+                }
+            }
+        )
         Bunny(
             stage = PetStage.Teenager, modifier = Modifier
                 .fillMaxWidth(0.38f)
                 .weight(1f),
-            mood = PetMood.Sleep
+            mood = PetMood.Sleep,
+            touchOffset = null,
+            petListener = object : PetListener {
+                override fun updatePetMod(newMode: PetMood) {
+
+                }
+            }
         )
 
         Bunny(
             stage = PetStage.Adult, modifier = Modifier
                 .fillMaxWidth(0.38f)
                 .weight(1f),
-            mood = PetMood.Happy
+            mood = PetMood.Happy,
+            touchOffset = null,
+            petListener = object : PetListener {
+                override fun updatePetMod(newMode: PetMood) {
+
+                }
+            }
         )
     }
 }
@@ -967,5 +736,13 @@ fun BunnyRoundRect1Preview() {
 @Preview(showBackground = true, widthDp = 400, heightDp = 400)
 @Composable
 fun BunnyRoundRect2Preview() {
-    Bunny(stage = PetStage.Adult, mood = PetMood.Happy)
+    Bunny(
+        stage = PetStage.Adult,
+        mood = PetMood.Happy,
+        touchOffset = null,
+        petListener = object : PetListener {
+            override fun updatePetMod(newMode: PetMood) {
+
+            }
+        })
 }
