@@ -3,7 +3,6 @@ package com.stepalex.finny.presentation.home
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
-import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -26,8 +24,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
+import com.stepalex.finny.presentation.items.PetItemColor
+import com.stepalex.finny.presentation.items.PetItemParam
+import com.stepalex.finny.presentation.items.PetItemPosition
+import com.stepalex.finny.presentation.items.PetItems
 import com.stepalex.finny.presentation.pets.Bunny
 import com.stepalex.finny.presentation.pets.PetAction
+import com.stepalex.finny.presentation.pets.PetColor
 import com.stepalex.finny.presentation.pets.PetListener
 import com.stepalex.finny.presentation.pets.PetMood
 import com.stepalex.finny.presentation.pets.PetStage
@@ -41,6 +44,18 @@ fun HomeScreen(event: (HomeEvent) -> Unit, state: HomeState) {
     var action by remember { mutableStateOf(PetAction.Play) }
     var touchOffset by remember { mutableStateOf<Offset?>(null) }
 
+    var petItems by remember {
+        mutableStateOf(
+            PetItems(
+                topHat = null,
+                neckTie = null,
+                hairBow = null,
+                glass = null,
+                crown = null,
+                bowTie = null
+            )
+        )
+    }
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -89,6 +104,8 @@ fun HomeScreen(event: (HomeEvent) -> Unit, state: HomeState) {
             mood = mood,
             action = action,
             touchOffset = touchOffset,
+            petColor = PetColor.White,
+            petItems = petItems,
             petListener = object : PetListener {
                 override fun updatePetMod(newMode: PetMood) {
                     mood = newMode
@@ -131,6 +148,94 @@ fun HomeScreen(event: (HomeEvent) -> Unit, state: HomeState) {
                     }) { Text("PLAY") }
                 }
             }
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter)
+        ) {
+            Button(onClick = {
+                petItems = petItems.copy(
+                    topHat = null,
+                    hairBow = PetItemParam(
+                        isSparkles = false,
+                        position = PetItemPosition.TOP,
+                        petItemColor = PetItemColor.Fuchsia
+                    )
+                )
+            }) { Text("Корона TOP Fuchsia") }
+            Button(onClick = {
+                petItems = petItems.copy(
+                    topHat = null,
+                    hairBow = PetItemParam(
+                        isSparkles = true,
+                        position = PetItemPosition.LEFT,
+                        petItemColor = PetItemColor.Orange
+                    )
+                )
+            }) { Text("Корона LEFT Fuchsia") }
+            Button(onClick = {
+                petItems = petItems.copy(
+                    topHat = null,
+                    hairBow = PetItemParam(
+                        isSparkles = true,
+                        position = PetItemPosition.LEFT,
+                        petItemColor = PetItemColor.Blue
+                    )
+                )
+            }) { Text("Корона LEFT Blue") }
+
+            Button(onClick = {
+                petItems = petItems.copy(
+                    crown = null,
+                    bowTie = PetItemParam(
+                        isSparkles = true,
+                        position = PetItemPosition.TOP,
+                        petItemColor = PetItemColor.Emerald
+                    )
+                )
+            }) { Text("Корона TOP Fuchsia") }
+        /*    Button(onClick = {
+                petItems = petItems.copy(
+                    crown = null,
+                    topHat = PetItemParam(
+                        isSparkles = true,
+                        position = PetItemPosition.LEFT,
+                        petItemColor = PetItemColor.Fuchsia
+                    )
+                )
+            }) { Text("Корона LEFT Fuchsia") }
+            Button(onClick = {
+                petItems = petItems.copy(
+                    crown = null,
+                    topHat = PetItemParam(
+                        isSparkles = false,
+                        position = PetItemPosition.LEFT,
+                        petItemColor = PetItemColor.Blue
+                    )
+                )
+            }) { Text("Корона LEFT Blue") }*/
+            Button(onClick = {
+                petItems = petItems.copy(
+                    crown = null,
+                    glass = PetItemParam(
+                        isSparkles = true,
+                        position = PetItemPosition.RIGHT,
+                        petItemColor = PetItemColor.Blue
+                    )
+                )
+            }) { Text("Корона LEFT Blue") }
+            Button(onClick = {
+                petItems = petItems.copy(
+                    crown = null,
+                    topHat = null,
+                    hairBow = null,
+                    bowTie = null,
+                    neckTie = null,
+                    glass = null
+                )
+            }) { Text("CLEAT") }
         }
     }
 

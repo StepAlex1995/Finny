@@ -33,6 +33,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.asAndroidPath
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.nativeCanvas
@@ -41,12 +42,18 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.stepalex.finny.presentation.items.PetItemColor
+import com.stepalex.finny.presentation.items.PetItemParam
+import com.stepalex.finny.presentation.items.PetItems
+import com.stepalex.finny.presentation.items.PetItemPosition
+import com.stepalex.finny.presentation.items.drawBowTie
+import com.stepalex.finny.presentation.items.drawCrown
+import com.stepalex.finny.presentation.items.drawGlasses
+import com.stepalex.finny.presentation.items.drawHairBow
+import com.stepalex.finny.presentation.items.drawNeckTie
+import com.stepalex.finny.presentation.items.drawTopHat
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
-
-private val OutlineColor = Color.Black
-private val FillColor = Color.White
-private val BlushColor = Color(0xFFFEE1E1)
 
 @Composable
 fun Bunny(
@@ -55,7 +62,9 @@ fun Bunny(
     action: PetAction = PetAction.Pet,
     touchOffset: Offset?,
     modifier: Modifier = Modifier,
-    petListener: PetListener
+    petListener: PetListener,
+    petColor: PetColor = PetColor.White,
+    petItems: PetItems?,
 ) {
     // --- Создаем транзишн, который следит за изменением состояния stage ---
     val transition = updateTransition(targetState = stage, label = "BunnyStageTransition")
@@ -108,8 +117,7 @@ fun Bunny(
 
     // --- Анимируем коэффициент масштаба в зависимости от целевой стадии ---
     val stageScale by transition.animateFloat(
-        transitionSpec = { tween(durationMillis = 600) },
-        label = "BunnyScale"
+        transitionSpec = { tween(durationMillis = 600) }, label = "BunnyScale"
     ) { targetStage ->
         when (targetStage) {
             PetStage.Baby -> 0.6f
@@ -119,8 +127,7 @@ fun Bunny(
     }
     // Анимация прогресса для лапок малыша
     val babyFeetProgress by transition.animateFloat(
-        transitionSpec = { tween(durationMillis = 600) },
-        label = "BabyFeetProgress"
+        transitionSpec = { tween(durationMillis = 600) }, label = "BabyFeetProgress"
     ) { targetStage ->
         if (targetStage == PetStage.Baby) 1f else 0f
     }
@@ -216,13 +223,19 @@ fun Bunny(
 
     // Инициализируем вынесенный стейт-файл
     val interactions = rememberPetInteractionsState(
-        stage = stage, mood = mood, action = action, touchOffset = touchOffset,
-        stageScale = stageScale, sleepBlinkProgress = sleepBlinkProgress,
-        mouthState = mouthState, petListener = petListener,
+        stage = stage,
+        mood = mood,
+        action = action,
+        touchOffset = touchOffset,
+        stageScale = stageScale,
+        sleepBlinkProgress = sleepBlinkProgress,
+        mouthState = mouthState,
+        petListener = petListener,
         isChewing = isChewing,
         initialEatMouthOpenProgress = eatMouthOpenProgress,
         initialLastMouthProgressBeforeRelease = lastMouthProgressBeforeRelease,
-        isSatisfied = isSatisfied
+        isSatisfied = isSatisfied,
+        petItems = petItems
     )
 
     // Специальный триггер для запуска еды, защищённый от прерывания корутины
@@ -268,6 +281,22 @@ fun Bunny(
     val zzzList = rememberPetZzz(mood = mood)
     val hearts = rememberPetHearts(isEnjoyingPet = interactions.isEnjoyingPet)
 
+    // Анимация блесска аксессуаров
+    var sparkleAnimationTime by remember { mutableFloatStateOf(0f) }
+
+
+    LaunchedEffect(Unit) {
+        var lastTime = withFrameMillis { it }
+        while (true) {
+            withFrameMillis { currentTime ->
+                val deltaTime = currentTime - lastTime
+                lastTime = currentTime
+                // Скорость мерцания искорок
+                sparkleAnimationTime =
+                    (sparkleAnimationTime + 0.002f * deltaTime) % (2f * Math.PI.toFloat())
+            }
+        }
+    }
     Canvas(
         modifier = modifier
             .fillMaxSize()
@@ -275,8 +304,7 @@ fun Bunny(
             .aspectRatio(1f)
             .onGloballyPositioned { layoutCoordinates ->
                 interactions.updatePosition(layoutCoordinates.positionInWindow())
-            }
-    ) {
+            }) {
         // Сохраняем точные пиксельные размеры холста для расчётов выше
         interactions.updateSize(size.width, size.height)
         val w = size.width
@@ -285,14 +313,11 @@ fun Bunny(
         // Общие стили линий
         val strokeWidth = w * 0.045f
         val strokeStyle = Stroke(
-            width = strokeWidth,
-            cap = StrokeCap.Round,
-            join = StrokeJoin.Round
+            width = strokeWidth, cap = StrokeCap.Round, join = StrokeJoin.Round
         )
+
         val mouthStrokeStyle = Stroke(
-            width = strokeWidth * 0.7f,
-            cap = StrokeCap.Round,
-            join = StrokeJoin.Round
+            width = strokeWidth * 0.7f, cap = StrokeCap.Round, join = StrokeJoin.Round
         )
 
         // ПРИМЕНЯЕМ МАСШТАБ РОСТА И ДЫХАНИЯ ОДНОВРЕМЕННО
@@ -321,12 +346,11 @@ fun Bunny(
                     tailTop = tailTop,
                     tailRight = tailRight,
                     tailBottom = tailBottom,
-                    armTop = armTop,
-                    armBottom = armBottom,
-                    haloAlpha = finalHaloAlpha
+                    haloAlpha = finalHaloAlpha,
+                    petColor
                 )
                 // Отрисовка щечек
-                drawPetChecks(w,h,BlushColor)
+                drawPetChecks(w, h, petColor.blushColor)
                 // Отрисовка элементов мордочки
                 drawPetFace(
                     w,
@@ -346,8 +370,19 @@ fun Bunny(
                     chewingPhase = chewingAnimationTime
                 )
                 if (babyFeetProgress > 0f) {
-                    drawBunnyFeet(w, h, strokeStyle, babyFeetProgress)
+                    drawBunnyFeet(w, h, strokeStyle, babyFeetProgress, petColor)
                 }
+                //--- ОТРИСОВКА ПРЕДМЕТОВ ---
+                drawPetItems(
+                    w = w,
+                    h = h,
+                    interactions = interactions,
+                    petItems = petItems,
+                    sparkleAnimationTime = sparkleAnimationTime,
+                    stageScale = stageScale
+                )
+                // --- РУКИ ---
+                drawHands(w, h, strokeStyle, bodyElementsProgress, armTop, armBottom, petColor)
             }
         }
         // ================= ИНТЕГРАЦИЯ ЗВЁЗД =================
@@ -372,7 +407,9 @@ fun Bunny(
                 p.reset(w, h, index) // Передаем w, h и index для очереди
             }
             if (p.alpha > 0f) {
-                drawSleepLetter(p, BlushColor) // Твоя оригинальная функция белых букв с обводкой
+                drawSleepLetter(
+                    p, petColor.blushColor
+                ) // Твоя оригинальная функция белых букв с обводкой
             }
         }
         // --- ОТРИСОВКА АЛЫХ СЕРДЕЧЕК ---
@@ -402,9 +439,12 @@ private fun DrawScope.drawBunnyBodyAndEars(
     bumpTop: Float,
     bumpBottom: Float,
     bodyElementsProgress: Float,
-    tailLeft: Float, tailTop: Float, tailRight: Float, tailBottom: Float,
-    armTop: Float, armBottom: Float,
-    haloAlpha: Float
+    tailLeft: Float,
+    tailTop: Float,
+    tailRight: Float,
+    tailBottom: Float,
+    haloAlpha: Float,
+    petColor: PetColor
 ) {
     // Голова
     val headPath = Path().apply {
@@ -506,10 +546,10 @@ private fun DrawScope.drawBunnyBodyAndEars(
                 )
             )
         }
-        drawPath(path = tailPath, color = FillColor, alpha = bodyElementsProgress)
+        drawPath(path = tailPath, color = petColor.fillColor, alpha = bodyElementsProgress)
         drawPath(
             path = tailPath,
-            color = OutlineColor,
+            color = petColor.outlineColor,
             style = strokeStyle,
             alpha = bodyElementsProgress
         )
@@ -576,8 +616,7 @@ private fun DrawScope.drawBunnyBodyAndEars(
             alpha = (haloAlpha * 255).toInt().coerceIn(0, 255)
             // Применяем фильтр размытия (работает на Android с выключенным аппаратным ускорением или на Canvas)
             maskFilter = BlurMaskFilter(
-                glowRadius,
-                BlurMaskFilter.Blur.NORMAL
+                glowRadius, BlurMaskFilter.Blur.NORMAL
             )
         }
 
@@ -589,26 +628,39 @@ private fun DrawScope.drawBunnyBodyAndEars(
 
     // --- ОТРИСОВКА САМОГО ТЕЛА
     // Отрисовка силуэта
-    drawPath(path = fullBunnyPath, color = FillColor)
-    drawPath(path = fullBunnyPath, color = OutlineColor, style = strokeStyle)
+    drawPath(path = fullBunnyPath, color = petColor.fillColor)
+    drawPath(path = fullBunnyPath, color = petColor.outlineColor, style = strokeStyle)
 
-    // --- Передние лапки-ручки (плавно прорисовываются поверх пузика) ---
+    // Розовые серединки ушей
+    drawPath(path = leftInnerEarPath, color = petColor.blushColor)
+    drawPath(path = rightInnerEarPath, color = petColor.blushColor)
+
+}
+
+/**
+ * Отрисовка ручек
+ */
+private fun DrawScope.drawHands(
+    w: Float,
+    h: Float,
+    strokeStyle: Stroke,
+    bodyElementsProgress: Float,
+    armTop: Float,
+    armBottom: Float,
+    petColor: PetColor
+) {
     if (bodyElementsProgress > 0f) {
         val leftArmPath = Path().apply {
             arcTo(
                 rect = Rect(
-                    left = w * 0.30f,
-                    top = h * armTop,
-                    right = w * 0.45f,
-                    bottom = h * armBottom
+                    left = w * 0.30f, top = h * armTop, right = w * 0.45f, bottom = h * armBottom
                 ), startAngleDegrees = -100f, sweepAngleDegrees = 200f, forceMoveTo = true
             )
             val pivotX = w * 0.35f
             val pivotY = h * 0.91f
             val matrix = Matrix().apply {
                 translate(
-                    pivotX,
-                    pivotY
+                    pivotX, pivotY
                 )
                 rotateZ(-30f)
                 translate(-pivotX, -pivotY)
@@ -618,18 +670,14 @@ private fun DrawScope.drawBunnyBodyAndEars(
         val rightArmPath = Path().apply {
             arcTo(
                 rect = Rect(
-                    left = w * 0.55f,
-                    top = h * armTop,
-                    right = w * 0.70f,
-                    bottom = h * armBottom
+                    left = w * 0.55f, top = h * armTop, right = w * 0.70f, bottom = h * armBottom
                 ), startAngleDegrees = 80f, sweepAngleDegrees = 200f, forceMoveTo = true
             )
             val pivotX = w * 0.65f
             val pivotY = h * 0.91f
             val matrix = Matrix().apply {
                 translate(
-                    pivotX,
-                    pivotY
+                    pivotX, pivotY
                 )
                 rotateZ(30f)
                 translate(-pivotX, -pivotY)
@@ -639,37 +687,47 @@ private fun DrawScope.drawBunnyBodyAndEars(
 
         drawPath(
             path = leftArmPath,
-            color = OutlineColor,
+            color = petColor.fillColor,
+            style = Fill,
+            alpha = bodyElementsProgress
+        )
+        drawPath(
+            path = leftArmPath,
+            color = petColor.outlineColor,
             style = strokeStyle,
+            alpha = bodyElementsProgress
+        )
+
+        drawPath(
+            path = rightArmPath,
+            color = petColor.fillColor,
+            style = Fill,
             alpha = bodyElementsProgress
         )
         drawPath(
             path = rightArmPath,
-            color = OutlineColor,
+            color = petColor.outlineColor,
             style = strokeStyle,
             alpha = bodyElementsProgress
         )
     }
-
-    // Розовые серединки ушей
-    drawPath(path = leftInnerEarPath, color = BlushColor)
-    drawPath(path = rightInnerEarPath, color = BlushColor)
-
 }
 
 
 /**
  * Отрисовка лапок поверх готового тела.
  */
-private fun DrawScope.drawBunnyFeet(w: Float, h: Float, strokeStyle: Stroke, progress: Float) {
+private fun DrawScope.drawBunnyFeet(
+    w: Float, h: Float, strokeStyle: Stroke, progress: Float, petColor: PetColor
+) {
     val leftFootCenter = Offset(w * 0.24f, h * 0.84f)
     val rightFootCenter = Offset(w * 0.76f, h * 0.84f)
     // Уменьшаем радиус лапок в зависимости от прогресса анимации
     val footRadius = w * 0.11f * progress
     // Левая лапка
-    drawCircle(color = FillColor, radius = footRadius, center = leftFootCenter)
+    drawCircle(color = petColor.fillColor, radius = footRadius, center = leftFootCenter)
     drawCircle(
-        color = OutlineColor,
+        color = petColor.outlineColor,
         radius = footRadius,
         center = leftFootCenter,
         style = strokeStyle,
@@ -677,9 +735,9 @@ private fun DrawScope.drawBunnyFeet(w: Float, h: Float, strokeStyle: Stroke, pro
     )
 
     // Правая лапка
-    drawCircle(color = FillColor, radius = footRadius, center = rightFootCenter)
+    drawCircle(color = petColor.fillColor, radius = footRadius, center = rightFootCenter)
     drawCircle(
-        color = OutlineColor,
+        color = petColor.outlineColor,
         radius = footRadius,
         center = rightFootCenter,
         style = strokeStyle,
@@ -694,42 +752,45 @@ fun BunnyRoundRect1Preview() {
     Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
 
         Bunny(
-            stage = PetStage.Baby, modifier = Modifier
+            stage = PetStage.Baby,
+            modifier = Modifier
                 .fillMaxWidth(0.38f)
                 .weight(1f),
             mood = PetMood.Sad,
             touchOffset = null,
+            petItems = null,
             petListener = object : PetListener {
                 override fun updatePetMod(newMode: PetMood) {
 
                 }
-            }
-        )
+            })
         Bunny(
-            stage = PetStage.Teenager, modifier = Modifier
+            stage = PetStage.Teenager,
+            modifier = Modifier
                 .fillMaxWidth(0.38f)
                 .weight(1f),
             mood = PetMood.Sleep,
             touchOffset = null,
+            petItems = null,
             petListener = object : PetListener {
                 override fun updatePetMod(newMode: PetMood) {
 
                 }
-            }
-        )
+            })
 
         Bunny(
-            stage = PetStage.Adult, modifier = Modifier
+            stage = PetStage.Adult,
+            modifier = Modifier
                 .fillMaxWidth(0.38f)
                 .weight(1f),
             mood = PetMood.Happy,
             touchOffset = null,
+            petItems = null,
             petListener = object : PetListener {
                 override fun updatePetMod(newMode: PetMood) {
 
                 }
-            }
-        )
+            })
     }
 }
 
@@ -740,6 +801,7 @@ fun BunnyRoundRect2Preview() {
         stage = PetStage.Adult,
         mood = PetMood.Happy,
         touchOffset = null,
+        petItems = null,
         petListener = object : PetListener {
             override fun updatePetMod(newMode: PetMood) {
 
