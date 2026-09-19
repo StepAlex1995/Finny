@@ -2,6 +2,7 @@ package com.stepalex.finny.presentation.pets
 
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
@@ -29,9 +30,11 @@ fun DrawScope.drawPetFace(
     rightLookY: Float,
     eatOpenProgress: Float,
     isChewing: Boolean,
-    chewingPhase: Float
+    chewingPhase: Float,
+    petType: PetType,
+    petColor: PetColor
 ) {
-    val outlineColor = Color.Black
+    val outlineColor = petColor.outlineColor
 
     // --- Глаза ---
     // Вычисляем размеры глаз с учетом моргания
@@ -187,7 +190,7 @@ fun DrawScope.drawPetFace(
         if (eatOpenProgress > 0.4f) {
             val tongueW = currentMouthW * 0.7f
             val tongueH = currentMouthH * 0.35f
-            val tongueColor = Color(0xFFFF8A8A)
+            val tongueColor = petColor.blushColor//Color(0xFFFF8A8A)
 
             drawOval(
                 color = tongueColor,
@@ -232,6 +235,28 @@ fun DrawScope.drawPetFace(
 
         val leftControlX = (leftCornerX + centerX) / 2f
         val rightControlX = (rightCornerX + centerX) / 2f
+
+        // ================= ДОБАВЛЯЕМ КАВАЙНЫЙ НОСИК ДЛЯ МИШКИ (НОВОЕ) =================
+        // Носик привязан к точке finalCenterY, поэтому он будет умилительно
+        // покачиваться при жевании и сонном посапывании вместе с губами!
+        if (petType == PetType.BEAR) {
+            val noseW = w * 0.052f
+            val noseH = h * 0.036f
+            val nosePath = Path().apply {
+                addRoundRect(
+                    RoundRect(
+                        left = centerX - (noseW / 2f),
+                        // Сажаем строго на верхний стык Безье-губы
+                        top = finalCenterY - noseH - (h * 0.003f),
+                        right = centerX + (noseW / 2f),
+                        bottom = finalCenterY - (h * 0.003f),
+                        cornerRadius = CornerRadius(noseW * 0.45f, noseH * 0.42f)
+                    )
+                )
+            }
+            // Красим нос в цвет контура (outlineColor), взятый из темы питомца
+            drawPath(path = nosePath, color = petColor.outlineColor)
+        }
 
         // 3. Анатомическое построение пути из двух половинок губы
         val mouthPath = Path().apply {

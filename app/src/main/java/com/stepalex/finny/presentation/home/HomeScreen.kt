@@ -28,17 +28,19 @@ import com.stepalex.finny.presentation.items.PetItemColor
 import com.stepalex.finny.presentation.items.PetItemParam
 import com.stepalex.finny.presentation.items.PetItemPosition
 import com.stepalex.finny.presentation.items.PetItems
-import com.stepalex.finny.presentation.pets.Bunny
+import com.stepalex.finny.presentation.pets.Pet
 import com.stepalex.finny.presentation.pets.PetAction
 import com.stepalex.finny.presentation.pets.PetColor
 import com.stepalex.finny.presentation.pets.PetListener
 import com.stepalex.finny.presentation.pets.PetMood
 import com.stepalex.finny.presentation.pets.PetStage
+import com.stepalex.finny.presentation.pets.PetType
 
 @Composable
 fun HomeScreen(event: (HomeEvent) -> Unit, state: HomeState) {
 
 
+    var type by remember { mutableStateOf(PetType.BUNNY) }
     var state by remember { mutableStateOf(PetStage.Baby) }
     var mood by remember { mutableStateOf(PetMood.Normal) }
     var action by remember { mutableStateOf(PetAction.Play) }
@@ -96,7 +98,7 @@ fun HomeScreen(event: (HomeEvent) -> Unit, state: HomeState) {
             }
     ) {
         // ИНСТРУКЦИЯ ДЛЯ ТЕСТИРОВАНИЯ
-        Bunny(
+        Pet(
             modifier = Modifier
                 .size(300.dp)
                 .align(alignment = Alignment.Center),
@@ -106,6 +108,7 @@ fun HomeScreen(event: (HomeEvent) -> Unit, state: HomeState) {
             touchOffset = touchOffset,
             petColor = PetColor.White,
             petItems = petItems,
+            petType = type,
             petListener = object : PetListener {
                 override fun updatePetMod(newMode: PetMood) {
                     mood = newMode
@@ -146,6 +149,13 @@ fun HomeScreen(event: (HomeEvent) -> Unit, state: HomeState) {
                     Button(onClick = {
                         action = PetAction.Play
                     }) { Text("PLAY") }
+                    Button(onClick = {
+                        type = if(type == PetType.BUNNY){
+                            PetType.BEAR
+                        }else {
+                            PetType.BUNNY
+                        }
+                    }) { Text("PLAY") }
                 }
             }
         }
@@ -175,7 +185,7 @@ fun HomeScreen(event: (HomeEvent) -> Unit, state: HomeState) {
                     )
                 )
             }) { Text("Корона LEFT Fuchsia") }
-            Button(onClick = {
+           /* Button(onClick = {
                 petItems = petItems.copy(
                     topHat = null,
                     hairBow = PetItemParam(
@@ -196,7 +206,7 @@ fun HomeScreen(event: (HomeEvent) -> Unit, state: HomeState) {
                     )
                 )
             }) { Text("Корона TOP Fuchsia") }
-        /*    Button(onClick = {
+            Button(onClick = {
                 petItems = petItems.copy(
                     crown = null,
                     topHat = PetItemParam(
@@ -215,7 +225,7 @@ fun HomeScreen(event: (HomeEvent) -> Unit, state: HomeState) {
                         petItemColor = PetItemColor.Blue
                     )
                 )
-            }) { Text("Корона LEFT Blue") }*/
+            }) { Text("Корона LEFT Blue") }
             Button(onClick = {
                 petItems = petItems.copy(
                     crown = null,
@@ -225,7 +235,7 @@ fun HomeScreen(event: (HomeEvent) -> Unit, state: HomeState) {
                         petItemColor = PetItemColor.Blue
                     )
                 )
-            }) { Text("Корона LEFT Blue") }
+            }) { Text("Корона LEFT Blue") }*/
             Button(onClick = {
                 petItems = petItems.copy(
                     crown = null,
