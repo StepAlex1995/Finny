@@ -6,6 +6,7 @@ import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -28,6 +29,7 @@ import com.stepalex.finny.presentation.items.PetItemColor
 import com.stepalex.finny.presentation.items.PetItemParam
 import com.stepalex.finny.presentation.items.PetItemPosition
 import com.stepalex.finny.presentation.items.PetItems
+import com.stepalex.finny.presentation.pet_room.PetRoom
 import com.stepalex.finny.presentation.pets.Pet
 import com.stepalex.finny.presentation.pets.PetAction
 import com.stepalex.finny.presentation.pets.PetColor
@@ -61,9 +63,9 @@ fun HomeScreen(event: (HomeEvent) -> Unit, state: HomeState) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.DarkGray)
+            .background(Color.White)
             //.background(Color(0xFFF3F4F6))
-            .padding(all = 32.dp)
+            //.padding(all = 32.dp)
             .pointerInput(mood) { // Перезапускаем PointerInput при смене настроения
                 if (mood == PetMood.Sleep) {
                     // Если кролик спит, жесты полностью игнорируются
@@ -97,11 +99,14 @@ fun HomeScreen(event: (HomeEvent) -> Unit, state: HomeState) {
                 }
             }
     ) {
+        PetRoom(modifier = Modifier.fillMaxWidth().fillMaxHeight(0.75f))
+
         // ИНСТРУКЦИЯ ДЛЯ ТЕСТИРОВАНИЯ
         Pet(
             modifier = Modifier
                 .size(300.dp)
-                .align(alignment = Alignment.Center),
+                .align(alignment = Alignment.Center)
+                .padding(bottom = 100.dp),
             stage = state,
             mood = mood,
             action = action,
@@ -113,7 +118,6 @@ fun HomeScreen(event: (HomeEvent) -> Unit, state: HomeState) {
                 override fun updatePetMod(newMode: PetMood) {
                     mood = newMode
                 }
-
             }
         )
         Column(modifier = Modifier.fillMaxWidth()) {
@@ -124,7 +128,8 @@ fun HomeScreen(event: (HomeEvent) -> Unit, state: HomeState) {
                     PetStage.Adult -> PetStage.Baby
                 }
             }) { Text("Current stage = $state") }
-            Row(modifier = Modifier.fillMaxWidth()) {
+        }
+                /*Row(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.weight(0.5f)) {
                     Button(onClick = {
                         mood = PetMood.Sleep
@@ -246,7 +251,7 @@ fun HomeScreen(event: (HomeEvent) -> Unit, state: HomeState) {
                     glass = null
                 )
             }) { Text("CLEAT") }
-        }
+        }*/
     }
 
 }

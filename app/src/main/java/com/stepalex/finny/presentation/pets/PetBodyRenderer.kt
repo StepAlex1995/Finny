@@ -210,41 +210,6 @@ fun DrawScope.drawPetBodyAndEars(
         op(this, bodyMainPath, PathOperation.Union)
         op(this, bottomLeftBump, PathOperation.Union)
         op(this, bottomRightBump, PathOperation.Union)
-
-        // Магия монолитных рук-плеч мишки со скриншота:
-        // Если это медведь и стадия не младенец — вклеиваем лапки-плечи прямо в общий контур тела!
-        // Магия монолитных рук-плеч мишки со скриншота:
-        // Если это медведь и стадия не младенец — вклеиваем лапки-плечи прямо в общий контур тела!
-       /* if (petType == PetType.BEAR && bodyElementsProgress > 0f) {
-            val leftBearArm = Path().apply {
-                addRoundRect(RoundRect(left = w * 0.04f, top = h * bodyTop * 1.15f, right = w * 0.22f, bottom = h * bodyBottom * 0.92f, cornerRadius = CornerRadius(w * 0.1f, h * 0.15f)))
-
-                // ИСПРАВЛЕНО: Честный поворот матрицы вокруг pivot-точки плеча
-                val pX = w * 0.13f
-                val pY = h * bodyTop
-                val matrix = Matrix().apply {
-                    translate(pX, pY)
-                    rotateZ(-12f)
-                    translate(-pX, -pY)
-                }
-                transform(matrix)
-            }
-            val rightBearArm = Path().apply {
-                addRoundRect(RoundRect(left = w * 0.78f, top = h * bodyTop * 1.15f, right = w * 0.96f, bottom = h * bodyBottom * 0.92f, cornerRadius = CornerRadius(w * 0.1f, h * 0.15f)))
-
-                // ИСПРАВЛЕНО: Честный поворот матрицы вокруг pivot-точки плеча
-                val pX = w * 0.87f
-                val pY = h * bodyTop
-                val matrix = Matrix().apply {
-                    translate(pX, pY)
-                    rotateZ(12f)
-                    translate(-pX, -pY)
-                }
-                transform(matrix)
-            }
-            op(this, leftBearArm, PathOperation.Union)
-            op(this, rightBearArm, PathOperation.Union)
-        }*/
     }
 // ================= 5. ОТРИСОВКА СВЕТЯЩЕГОСЯ ОРЕОЛА НАТИВНЫМ БЛЮРОМ =================
     if (haloAlpha > 0f) {
