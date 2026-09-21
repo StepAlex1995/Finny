@@ -4,7 +4,6 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.text.input.TextFieldState.Saver.restore
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -16,8 +15,6 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.stepalex.finny.presentation.items.PetItemColor
-import com.stepalex.finny.presentation.items.drawBowTie
 
 
 fun DrawScope.drawMoney(
@@ -163,7 +160,7 @@ fun Money(
 
 @Preview
 @Composable
-fun BowTiePreview() {
+fun MoneyPreview() {
     Box(modifier = Modifier.size(200.dp), contentAlignment = Alignment.Center) {
         Money(modifier = Modifier.fillMaxSize())
     }
