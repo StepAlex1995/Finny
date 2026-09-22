@@ -3,6 +3,16 @@ package com.stepalex.finny.presentation.pets
 
 import android.graphics.BlurMaskFilter
 import android.graphics.Paint
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
@@ -17,6 +27,10 @@ import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import com.stepalex.finny.presentation.pet_room.drawFood
+
 /**
  * Главный декомпозированный движок отрисовки силуэта тела и ушей питомца (Кролик / Мишка)
  */
@@ -56,7 +70,8 @@ fun DrawScope.drawPetBodyAndEars(
 
     // Настраиваем цвет внутренностей ушей мишки (Индивидуальный приятный оттенок без розового!)
     val bearInnerEarColor = Color(0xFFC6BCB4)
-    val finalInnerEarColor = if (petType == PetType.BUNNY) petColor.blushColor else bearInnerEarColor
+    val finalInnerEarColor =
+        if (petType == PetType.BUNNY) petColor.blushColor else bearInnerEarColor
 
     when (petType) {
         PetType.BUNNY -> {
@@ -154,7 +169,10 @@ fun DrawScope.drawPetBodyAndEars(
             if (petType == PetType.BUNNY) {
                 addRoundRect(
                     RoundRect(
-                        left = w * tailLeft, top = h * tailTop, right = w * tailRight, bottom = h * tailBottom,
+                        left = w * tailLeft,
+                        top = h * tailTop,
+                        right = w * tailRight,
+                        bottom = h * tailBottom,
                         cornerRadius = CornerRadius(w * 0.065f, h * 0.065f)
                     )
                 )
@@ -166,7 +184,12 @@ fun DrawScope.drawPetBodyAndEars(
             }*/
         }
         drawPath(path = tailPath, color = petColor.fillColor, alpha = bodyElementsProgress)
-        drawPath(path = tailPath, color = petColor.outlineColor, style = strokeStyle, alpha = bodyElementsProgress)
+        drawPath(
+            path = tailPath,
+            color = petColor.outlineColor,
+            style = strokeStyle,
+            alpha = bodyElementsProgress
+        )
     }
 
     // 3. СТРОИМ ТУЛОВИЩЕ С УЧЕТОМ АНАТОМИИ
@@ -185,13 +208,29 @@ fun DrawScope.drawPetBodyAndEars(
                 bottomRightCornerRadius = CornerRadius(w * 0.2f, h * 0.2f),
             )
         )
-        bottomLeftBump.addRoundRect(RoundRect(left = w * 0.23f, top = h * bumpTop, right = w * 0.42f, bottom = h * bumpBottom, cornerRadius = CornerRadius(w * 0.71f, w * 0.71f)))
-        bottomRightBump.addRoundRect(RoundRect(left = w * 0.6f, top = h * bumpTop, right = w * 0.78f, bottom = h * bumpBottom, cornerRadius = CornerRadius(w * 0.71f, w * 0.71f)))
+        bottomLeftBump.addRoundRect(
+            RoundRect(
+                left = w * 0.23f,
+                top = h * bumpTop,
+                right = w * 0.42f,
+                bottom = h * bumpBottom,
+                cornerRadius = CornerRadius(w * 0.71f, w * 0.71f)
+            )
+        )
+        bottomRightBump.addRoundRect(
+            RoundRect(
+                left = w * 0.6f,
+                top = h * bumpTop,
+                right = w * 0.78f,
+                bottom = h * bumpBottom,
+                cornerRadius = CornerRadius(w * 0.71f, w * 0.71f)
+            )
+        )
     } else {
         // Медвежьи пухлые ножки-штанины монолитом со скриншота!
         bodyMainPath.addRoundRect(
             RoundRect(
-                left = w * 0.12f, top = h * bodyTop, right = w * 0.88f, bottom = h * bodyBottom ,
+                left = w * 0.12f, top = h * bodyTop, right = w * 0.88f, bottom = h * bodyBottom,
                 topLeftCornerRadius = CornerRadius(w * 0.45f, h * 0.35f),
                 topRightCornerRadius = CornerRadius(w * 0.45f, h * 0.35f),
                 bottomLeftCornerRadius = CornerRadius(w * 0.3f, h * 0.3f),
@@ -199,8 +238,24 @@ fun DrawScope.drawPetBodyAndEars(
             )
         )
         // Нижние ножки-штанины мишки плавно выходят из пузика
-        bottomLeftBump.addRoundRect(RoundRect(left = w * 0.16f, top = h * bumpTop, right = w * 0.44f, bottom = h * bumpBottom, cornerRadius = CornerRadius(w * 0.5f, w * 0.5f)))
-        bottomRightBump.addRoundRect(RoundRect(left = w * 0.56f, top = h * bumpTop, right = w * 0.84f, bottom = h * bumpBottom, cornerRadius = CornerRadius(w * 0.5f, w * 0.5f)))
+        bottomLeftBump.addRoundRect(
+            RoundRect(
+                left = w * 0.16f,
+                top = h * bumpTop,
+                right = w * 0.44f,
+                bottom = h * bumpBottom,
+                cornerRadius = CornerRadius(w * 0.5f, w * 0.5f)
+            )
+        )
+        bottomRightBump.addRoundRect(
+            RoundRect(
+                left = w * 0.56f,
+                top = h * bumpTop,
+                right = w * 0.84f,
+                bottom = h * bumpBottom,
+                cornerRadius = CornerRadius(w * 0.5f, w * 0.5f)
+            )
+        )
     }
 
     // 4. СБОРКА МОНОЛИТНОГО СИЛУЭТА ПИТОМЦА
@@ -375,4 +430,89 @@ fun DrawScope.drawPetFeet(
         style = strokeStyle,
         alpha = progress
     )
+}
+
+@Composable
+fun Silhouette(
+    modifier: Modifier,
+    petType: PetType,
+    stage: PetStage,
+    petColor: PetColor
+) {
+    val bodyTop = if (petType == PetType.BUNNY) {
+        when (stage) {
+            PetStage.Baby -> 0.87f
+            PetStage.Teenager -> 0.50f
+            PetStage.Adult -> 0.70f
+        }
+    } else {
+        when (stage) {
+            PetStage.Baby -> 0.87f
+            PetStage.Teenager -> 0.54f
+            PetStage.Adult -> 0.56f
+        }
+    }
+    val bodyBottom = if (petType == PetType.BUNNY) {
+        when (stage) {
+            PetStage.Baby -> 0.87f
+            PetStage.Teenager -> 0.99f
+            PetStage.Adult -> 1.19f
+        }
+    } else {
+        when (stage) {
+            PetStage.Baby -> 0.87f
+            PetStage.Teenager -> 0.94f
+            PetStage.Adult -> 1.15f
+        }
+    }
+    val bumpBottom = when (stage) {
+        PetStage.Baby -> 0.87f
+        PetStage.Teenager -> 1.04f
+        PetStage.Adult -> 1.24f
+    }
+    val bumpTop = when (stage) {
+        PetStage.Baby -> 0.87f
+        PetStage.Teenager -> 0.65f
+        PetStage.Adult -> 1.05f
+    }
+    val bodyElementsProgress = if (stage == PetStage.Baby) 0f else 1f
+
+    val tailLeft = if (stage == PetStage.Adult) 0.80f else 0.76f
+    val tailTop = if (stage == PetStage.Adult) 0.93f else 0.80f
+    val tailRight = if (stage == PetStage.Adult) 0.94f else 0.90f
+    val tailBottom = if (stage == PetStage.Adult) 1.07f else 0.94f
+
+
+    Canvas(modifier = modifier) {
+        drawPetBodyAndEars(
+            petType = petType,
+            w = size.width,
+            h = size.height,
+            strokeStyle = Stroke(width = 1f),
+            bodyTop = bodyTop,
+            bodyBottom = bodyBottom,
+            bumpTop = bumpTop,
+            bumpBottom = bumpBottom,
+            bodyElementsProgress = bodyElementsProgress,
+            tailLeft = tailLeft,
+            tailTop = tailTop,
+            tailRight = tailRight,
+            tailBottom = tailBottom,
+            haloAlpha = 0f,
+            petColor = petColor
+        )
+    }
+}
+
+@Preview
+@Composable
+fun SilhouettePreview() {
+    Box(modifier = Modifier.size(200.dp)) {
+        Silhouette(
+            modifier = Modifier.fillMaxSize(),
+            petType = PetType.BUNNY,
+            stage = PetStage.Baby,
+            petColor = PetColor.Indigo,
+        )
+    }
 }

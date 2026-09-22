@@ -1,5 +1,6 @@
 package com.stepalex.finny.presentation.home
 
+import android.widget.ProgressBar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
@@ -16,9 +17,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -30,11 +33,18 @@ import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.stepalex.finny.presentation.common.FinnyProgressBar
+import com.stepalex.finny.presentation.common.FinnyProgressStyle
+import com.stepalex.finny.presentation.common.FinnyTickStyle
+import com.stepalex.finny.presentation.common.OutlineText
 import com.stepalex.finny.presentation.items.PetItems
 import com.stepalex.finny.presentation.pet_room.Food
+import com.stepalex.finny.presentation.pet_room.Money
 import com.stepalex.finny.presentation.pet_room.MoodIndicator
 import com.stepalex.finny.presentation.pet_room.MoodSmile
 import com.stepalex.finny.presentation.pet_room.PetRoom
+import com.stepalex.finny.presentation.pet_room.Start
 import com.stepalex.finny.presentation.pets.Pet
 import com.stepalex.finny.presentation.pets.PetAction
 import com.stepalex.finny.presentation.pets.PetColor
@@ -42,6 +52,8 @@ import com.stepalex.finny.presentation.pets.PetListener
 import com.stepalex.finny.presentation.pets.PetMood
 import com.stepalex.finny.presentation.pets.PetStage
 import com.stepalex.finny.presentation.pets.PetType
+import com.stepalex.finny.presentation.pets.Silhouette
+import com.stepalex.finny.utils.Fonts
 
 @Composable
 fun HomeScreen(event: ((HomeEvent) -> Unit)?, state: HomeState) {
@@ -54,6 +66,9 @@ fun HomeScreen(event: ((HomeEvent) -> Unit)?, state: HomeState) {
     var touchOffset by remember { mutableStateOf<Offset?>(null) }
 
     var testCount by remember { mutableStateOf(1) }
+    var goalMoney by remember { mutableFloatStateOf(1000f) }
+    var currentMoney by remember { mutableFloatStateOf(300f) }
+    var progress by remember { mutableStateOf(0.0f) }
 
     var petItems by remember {
         mutableStateOf(
@@ -121,16 +136,100 @@ fun HomeScreen(event: ((HomeEvent) -> Unit)?, state: HomeState) {
                 modifier = Modifier
                     .fillMaxWidth(0.55f)
                     .align(alignment = Alignment.CenterHorizontally)
-                    .padding(top = 160.dp)
-                    .height(100.dp),
+                    .padding(top = 25.dp),
+                //.height(100.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                //Индикатор денег
+                Row(
+                    verticalAlignment = Alignment.Bottom,
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(70.dp)
+                    //.background(Color.Green)
+                ) {
+                    Money(
+                        modifier = Modifier
+                            .width(40.dp)
+                            .height(40.dp)
+                    )//.padding(bottom = 10.dp))
+                    OutlineText(
+                        "123",
+                        modifier = Modifier,
+                        fontSize = 40.sp,
+                        strokeSize = 10f,
+                        alignment = Alignment.BottomStart,
+                        fontFamily = Fonts.CountMoneyFontFamily
+                    )
+                }
+
+                FinnyProgressBar(
+                    0.4f,
+                    trackStyle = FinnyProgressStyle(
+                        color = Color.LightGray,
+                        cornerRadius = 4.dp
+                    ),
+                    progressStyle = FinnyProgressStyle(
+                        //color = Color(0xFFAF4FAF),
+                        color = Color(0xFF7000FF),
+                        //color = Color(0xFFB380FF),
+                        cornerRadius = 4.dp
+                    ),
+                    segmentsCount = 3,
+                    tickStyle = FinnyTickStyle(
+                        inactiveColor = Color.LightGray,
+                        //activeColor = Color(0xFFAF4FAF),
+                        //activeColor = Color(0xFFB380FF),
+                        activeColor = Color(0xFF1A004D),
+                        extraHeight = 3.dp
+                    ),
+                    modifier = Modifier//.padding(16.dp)
+                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 4.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Silhouette(
+                        modifier = Modifier.size(10.dp),
+                        petType = PetType.BUNNY,
+                        stage = PetStage.Baby,
+                        petColor = PetColor.CyberPurple,
+                    )
+                    Silhouette(
+                        modifier = Modifier.size(10.dp),
+                        petType = PetType.BUNNY,
+                        stage = PetStage.Teenager,
+                        petColor = PetColor.CyberPurple,
+                    )
+                    Silhouette(
+                        modifier = Modifier.size(10.dp),
+                        petType = PetType.BUNNY,
+                        stage = PetStage.Adult,
+                        petColor = PetColor.SilverGrey,
+                    )
+                    Start(modifier = Modifier.size(10.dp))
+                }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    OutlineText("Цель:", fontFamily = Fonts.RegularTextFontFamily, strokeSize = 5f)
+                    OutlineText("1000", fontFamily = Fonts.RegularTextFontFamily, strokeSize = 5f)
+                }
+
+                //Индикатор еды
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp)
-                    // .background(Color.Red)
+                        .padding(top = 4.dp)
                 ) {
                     for (i in 0..4) {
                         Food(
@@ -140,12 +239,12 @@ fun HomeScreen(event: ((HomeEvent) -> Unit)?, state: HomeState) {
                         )
                     }
                 }
+                //Индикатор настроения
                 Row(
                     verticalAlignment = Alignment.Top,
                     modifier = Modifier
                         .fillMaxWidth(0.8f)
                         .height(50.dp)
-                    //.background(Color.Black)
                 ) {
                     val count = testCount
                     val moodIndicator =
@@ -166,7 +265,7 @@ fun HomeScreen(event: ((HomeEvent) -> Unit)?, state: HomeState) {
             modifier = Modifier
                 .size(300.dp)
                 .align(alignment = Alignment.Center),
-                //.padding(bottom = 100.dp),
+            //.padding(bottom = 100.dp),
             stage = state,
             mood = mood,
             action = action,
@@ -183,14 +282,14 @@ fun HomeScreen(event: ((HomeEvent) -> Unit)?, state: HomeState) {
 
         // ИНСТРУКЦИЯ ДЛЯ ТЕСТИРОВАНИЯ
         Column(modifier = Modifier.fillMaxWidth()) {
-            Button(onClick = {
-                testCount = if ((testCount + 1) % 6 == 0) 1 else (testCount + 1) % 6
-                state = when (state) {
-                    PetStage.Baby -> PetStage.Teenager
-                    PetStage.Teenager -> PetStage.Adult
-                    PetStage.Adult -> PetStage.Baby
-                }
-            }) { Text("Current stage = $state") }
+            /*     Button(onClick = {
+                     testCount = if ((testCount + 1) % 6 == 0) 1 else (testCount + 1) % 6
+                     state = when (state) {
+                         PetStage.Baby -> PetStage.Teenager
+                         PetStage.Teenager -> PetStage.Adult
+                         PetStage.Adult -> PetStage.Baby
+                     }
+                 }) { Text("Current stage = $state") }*/
         }
         /*Row(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.weight(0.5f)) {
