@@ -1,6 +1,5 @@
 package com.stepalex.finny.presentation.home
 
-import android.widget.ProgressBar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
@@ -17,7 +16,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -37,6 +35,7 @@ import androidx.compose.ui.unit.sp
 import com.stepalex.finny.presentation.common.FinnyProgressBar
 import com.stepalex.finny.presentation.common.FinnyProgressStyle
 import com.stepalex.finny.presentation.common.FinnyTickStyle
+import com.stepalex.finny.presentation.common.CountMoneyOutlineText
 import com.stepalex.finny.presentation.common.OutlineText
 import com.stepalex.finny.presentation.items.PetItems
 import com.stepalex.finny.presentation.pet_room.Food
@@ -124,7 +123,7 @@ fun HomeScreen(event: ((HomeEvent) -> Unit)?, state: HomeState) {
         PetRoom(
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(0.75f)
+                .fillMaxHeight(1f)
         )
 
         Column(
@@ -154,7 +153,7 @@ fun HomeScreen(event: ((HomeEvent) -> Unit)?, state: HomeState) {
                             .width(40.dp)
                             .height(40.dp)
                     )//.padding(bottom = 10.dp))
-                    OutlineText(
+                    CountMoneyOutlineText(
                         "123",
                         modifier = Modifier,
                         fontSize = 40.sp,
@@ -219,8 +218,8 @@ fun HomeScreen(event: ((HomeEvent) -> Unit)?, state: HomeState) {
                         .padding(bottom = 8.dp),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    OutlineText("Цель:", fontFamily = Fonts.RegularTextFontFamily, strokeSize = 5f)
-                    OutlineText("1000", fontFamily = Fonts.RegularTextFontFamily, strokeSize = 5f)
+                    CountMoneyOutlineText("Цель:", fontFamily = Fonts.RegularTextFontFamily, strokeSize = 5f)
+                    CountMoneyOutlineText("1000", fontFamily = Fonts.RegularTextFontFamily, strokeSize = 5f)
                 }
 
                 //Индикатор еды
@@ -279,17 +278,31 @@ fun HomeScreen(event: ((HomeEvent) -> Unit)?, state: HomeState) {
                 }
             }
         )
-
+        Box(modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight(0.8f)) {
+            Button(
+                modifier = Modifier
+                    //.fillMaxWidth(0.8f)
+                    .padding(bottom = 16.dp, start = 24.dp, end = 24.dp)
+                    .align(alignment = Alignment.BottomCenter),
+                onClick = { event?.let { it(HomeEvent.OpenQuiz(0)) } }) {
+                OutlineText(
+                    "Название события",
+                    modifier = Modifier.padding(horizontal = 24.dp)
+                )
+            }
+        }
         // ИНСТРУКЦИЯ ДЛЯ ТЕСТИРОВАНИЯ
         Column(modifier = Modifier.fillMaxWidth()) {
-            /*     Button(onClick = {
-                     testCount = if ((testCount + 1) % 6 == 0) 1 else (testCount + 1) % 6
-                     state = when (state) {
-                         PetStage.Baby -> PetStage.Teenager
-                         PetStage.Teenager -> PetStage.Adult
-                         PetStage.Adult -> PetStage.Baby
-                     }
-                 }) { Text("Current stage = $state") }*/
+            Button(onClick = {
+                testCount = if ((testCount + 1) % 6 == 0) 1 else (testCount + 1) % 6
+                state = when (state) {
+                    PetStage.Baby -> PetStage.Teenager
+                    PetStage.Teenager -> PetStage.Adult
+                    PetStage.Adult -> PetStage.Baby
+                }
+            }) { Text("Current stage = $state") }
         }
         /*Row(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.weight(0.5f)) {

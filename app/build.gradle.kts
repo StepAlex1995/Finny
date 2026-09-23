@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -57,4 +58,9 @@ dependencies {
     compileOnly(libs.errorprone.annotations)
     implementation(libs.hilt.navigation.compose)
     implementation(libs.androidx.navigation)
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.room.runtime)
+    implementation(libs.room.ktx)
+    ksp(libs.room.compiler)
+    implementation(libs.androidx.core.splashscreen)
 }

@@ -27,7 +27,7 @@ fun PetRoom(modifier: Modifier = Modifier, petRoomColor: PetRoomColor = PetRoomC
 
         val lineWidth = w * 0.006f
         //пол и стены
-        val wallHeight = h * 0.56f
+        val wallHeight = h * 0.5f
         drawWallAndFlow(w, h, wallHeight, lineWidth, petRoomColor)
         //окно
         drawWindow(w, wallHeight, petRoomColor)
@@ -132,7 +132,6 @@ private fun DrawScope.drawCurtain(
         // Линия над подвязкой (идет от верха к подвязке)
         moveTo(curtainTopW * 0.5f, wallHeight * 0.2f)
         quadraticTo(curtainTopW * 0.45f, tieY * 0.8f, curtainCenterW * 0.2f, tieY)
-
         // Линия под подвязкой (спускается вниз к одной из дуг, как на скриншоте)
         val startUnderTieY = tieY + tieH
         moveTo(curtainCenterW * 0.65f, startUnderTieY)
@@ -247,9 +246,8 @@ private fun DrawScope.drawCurtain(
     // Внутренние линии складок для объема (ПРАВАЯ)
     val rightFoldLine = Path().apply {
         // Линия над подвязкой
-        moveTo(w - curtainTopW * 0.5f, 0f)
-        quadraticTo(w - curtainTopW * 0.45f, tieY * 0.5f, w - curtainCenterW * 0.6f, tieY)
-
+        moveTo(w - curtainTopW * 0.5f, wallHeight * 0.2f)
+        quadraticTo(w - curtainTopW * 0.45f, tieY * 0.8f, w - curtainCenterW * 0.2f, tieY)
         // Линия под подвязкой
         val startUnderTieY = tieY + tieH
         moveTo(w - curtainCenterW * 0.65f, startUnderTieY)
@@ -493,7 +491,7 @@ private fun DrawScope.drawWallAndFlow(
         topLeft = Offset(0f, wallHeight),
         size = Size(w, h - wallHeight)
     )
-    val maxLine = 4
+    val maxLine = 6
     for (i in 0..maxLine) {
         drawLine(
             color = petRoomColor.floorLineColor,
@@ -522,44 +520,75 @@ private fun DrawScope.drawWallAndFlow(
     //черточки на полу
     drawLine(
         color = petRoomColor.floorLineColor,
-        start = Offset(w * 0.13f, (h - flowHeight) + flowHeight * 0.3f),
-        end = Offset(w * 0.23f, (h - flowHeight) + flowHeight * 0.32f),
+        start = Offset(w * 0.13f, (h - flowHeight) + flowHeight * 0.23f),
+        end = Offset(w * 0.25f, (h - flowHeight) + flowHeight * 0.22f),
         strokeWidth = lineWidth * 1.5f
     )
     drawLine(
         color = petRoomColor.floorLineColor,
-        start = Offset(w * 0.83f, (h - flowHeight) + flowHeight * 0.12f),
-        end = Offset(w * 1f, (h - flowHeight) + flowHeight * 0.11f),
+        start = Offset(w * 0.75f, (h - flowHeight) + flowHeight * 0.22f),
+        end = Offset(w * 0.89f, (h - flowHeight) + flowHeight * 0.21f),
         strokeWidth = lineWidth * 1.5f
     )
     drawLine(
         color = petRoomColor.floorLineColor,
-        start = Offset(w * 0.63f, (h - flowHeight) + flowHeight * 0.08f),
-        end = Offset(w * 0.69f, (h - flowHeight) + flowHeight * 0.09f),
+        start = Offset(w * 0.73f, (h - flowHeight) + flowHeight * 0.06f),
+        end = Offset(w * 0.79f, (h - flowHeight) + flowHeight * 0.07f),
         strokeWidth = lineWidth * 1.5f
     )
     drawLine(
         color = petRoomColor.floorLineColor,
-        start = Offset(w * 0f, (h - flowHeight) + flowHeight * 0.63f),
-        end = Offset(w * 0.18f, (h - flowHeight) + flowHeight * 0.60f),
+        start = Offset(w * 0f, (h - flowHeight) + flowHeight * 0.43f),
+        end = Offset(w * 0.18f, (h - flowHeight) + flowHeight * 0.40f),
         strokeWidth = lineWidth * 1.5f
     )
     drawLine(
         color = petRoomColor.floorLineColor,
-        start = Offset(w * 0.55f, (h - flowHeight) + flowHeight * 0.56f),
-        end = Offset(w * 0.8f, (h - flowHeight) + flowHeight * 0.58f),
+        start = Offset(w * 0.55f, (h - flowHeight) + flowHeight * 0.41f),
+        end = Offset(w * 0.8f, (h - flowHeight) + flowHeight * 0.43f),
         strokeWidth = lineWidth * 1.5f
     )
     drawLine(
         color = petRoomColor.floorLineColor,
-        start = Offset(w * 0.55f, (h - flowHeight) + flowHeight * 0.56f),
-        end = Offset(w * 0.8f, (h - flowHeight) + flowHeight * 0.58f),
+        start = Offset(w * 0.88f, (h - flowHeight) + flowHeight * 0.39f),
+        end = Offset(w * 0.96f, (h - flowHeight) + flowHeight * 0.38f),
+        strokeWidth = lineWidth * 1.5f
+    )
+
+    drawLine(
+        color = petRoomColor.floorLineColor,
+        start = Offset(w * 0.1f, (h - flowHeight) + flowHeight * 0.61f),
+        end = Offset(w * 0.25f, (h - flowHeight) + flowHeight * 0.62f),
         strokeWidth = lineWidth * 1.5f
     )
     drawLine(
         color = petRoomColor.floorLineColor,
-        start = Offset(w * 0.88f, (h - flowHeight) + flowHeight * 0.67f),
-        end = Offset(w * 0.96f, (h - flowHeight) + flowHeight * 0.66f),
+        start = Offset(w * 0.75f, (h - flowHeight) + flowHeight * 0.60f),
+        end = Offset(w * 0.93f, (h - flowHeight) + flowHeight * 0.61f),
+        strokeWidth = lineWidth * 1.5f
+    )
+    drawLine(
+        color = petRoomColor.floorLineColor,
+        start = Offset(w * 0.4f, (h - flowHeight) + flowHeight * 0.56f),
+        end = Offset(w * 0.47f, (h - flowHeight) + flowHeight * 0.565f),
+        strokeWidth = lineWidth * 1.5f
+    )
+    drawLine(
+        color = petRoomColor.floorLineColor,
+        start = Offset(w * 0.20f, (h - flowHeight) + flowHeight * 0.77f),
+        end = Offset(w * 0.40f, (h - flowHeight) + flowHeight * 0.76f),
+        strokeWidth = lineWidth * 1.5f
+    )
+    drawLine(
+        color = petRoomColor.floorLineColor,
+        start = Offset(w * 0.83f, (h - flowHeight) + flowHeight * 0.78f),
+        end = Offset(w * 1f, (h - flowHeight) + flowHeight * 0.80f),
+        strokeWidth = lineWidth * 1.5f
+    )
+    drawLine(
+        color = petRoomColor.floorLineColor,
+        start = Offset(w * 0.75f, (h - flowHeight) + flowHeight * 0.91f),
+        end = Offset(w * 0.56f, (h - flowHeight) + flowHeight * 0.92f),
         strokeWidth = lineWidth * 1.5f
     )
 }
@@ -576,7 +605,7 @@ fun PetRoomPreview() {
         PetRoom(
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(0.75f)
+                .fillMaxHeight(1f)
         )
     }
 }

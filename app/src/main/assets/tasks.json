@@ -1,0 +1,65 @@
+{
+  "version": 2,
+  "tasks": [
+    {
+      "title": "Название события",
+      "description": "Описание ситуации",
+      "help": "Подсказка: первый вариант лучше",
+      "answers": [
+        {
+          "text": "Первый вариант(предпочтительный)",
+          "description": "Описание последствий варианта 1 после выбора",
+          "taskResult": {
+            "gold": 0,
+            "food": 0,
+            "mood": -1
+          },
+          "isPrefer": true
+        },
+        {
+          "text": "Второй вариант(нежелательный)",
+          "description": "Описание последствий варианта 2 после выбора",
+          "taskResult": {
+            "gold": -100,
+            "food": 0,
+            "mood": 1
+          },
+          "isPrefer": false
+        }
+      ],
+      "type": "Optional",
+      "complexity": 1,
+      "frequency": 1
+    },
+    {
+      "title": "Подозрительная ссылка",
+      "description": "Вам пришло SMS от незнакомца с предложением выиграть приз.",
+      "byParent": false,
+      "type": "Scam",
+      "complexity": 1,
+      "frequency": 3,
+      "answers": [
+        {
+          "text": "Перейти по ссылке",
+          "description": "Вы перешли по ссылке и поймали вирус.",
+          "isPrefer": false,
+          "taskResult": {
+            "gold": -100,
+            "food": 0,
+            "mood": -20
+          }
+        },
+        {
+          "text": "Заблокировать номер",
+          "description": "Вы проигнорировали мошенников и сохранили деньги.",
+          "isPrefer": true,
+          "taskResult": {
+            "gold": 0,
+            "food": 0,
+            "mood": 10
+          }
+        }
+      ]
+    }
+  ]
+}

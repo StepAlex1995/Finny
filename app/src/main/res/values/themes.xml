@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Тема для Splash Скрина -->
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+        <!-- Фон сплеша -->
+        <item name="windowSplashScreenBackground" >#FFFFFF</item>
+        <!-- Иконка по центру (ваша иконка приложения или логотип) -->
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <!-- Какая тема применится ПОСЛЕ завершения сплеша -->
+        <item name="postSplashScreenTheme">@style/Theme.Finny</item>
+    </style>
 
     <style name="Theme.Finny" parent="android:Theme.Material.Light.NoActionBar" />
 </resources>

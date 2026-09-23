@@ -1,4 +1,5 @@
 package com.stepalex.finny.nvgraph
 
-sealed class HomeUIEvent {
+sealed interface HomeUIEvent {
+    data object OpenQuiz : HomeUIEvent
 }
