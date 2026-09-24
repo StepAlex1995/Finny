@@ -40,6 +40,8 @@ fun OutlineText(
         Text(
             text = text,
             textAlign = textAlign,
+            // softWrap = false, // Запрещаем перенос строки из-за нехватки места
+           // overflow = TextOverflow.Visible, // Разрешаем тексту выходить за рамки контейнера
             style = TextStyle(
                 fontSize = fontSize,
                 fontWeight = FontWeight.Bold,

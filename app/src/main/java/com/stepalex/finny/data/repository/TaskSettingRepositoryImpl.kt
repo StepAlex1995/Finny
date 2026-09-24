@@ -1,11 +1,11 @@
 package com.stepalex.finny.data.repository
 
-import android.content.Context
-import com.stepalex.finny.domain.repository.TaskSettingRepository
+import android.content.SharedPreferences
 import androidx.core.content.edit
+import com.stepalex.finny.domain.repository.TaskSettingRepository
 
-class TaskSettingRepositoryImpl(context: Context) : TaskSettingRepository {
-    private val prefs = context.getSharedPreferences("app_settings", Context.MODE_PRIVATE)
+class TaskSettingRepositoryImpl(private val prefs: SharedPreferences) :
+    TaskSettingRepository {
 
     override suspend fun getLastSavedVersion(): Int = prefs.getInt("tasks_json_version", 0)
 

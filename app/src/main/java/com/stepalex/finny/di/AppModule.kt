@@ -1,9 +1,11 @@
 package com.stepalex.finny.di
 
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.room.Room
 import com.stepalex.finny.data.local.room.AppDatabase
 import com.stepalex.finny.data.local.room.TaskDao
+import com.stepalex.finny.data.repository.ProfileRepositoryImpl
 import com.stepalex.finny.data.repository.TaskRepositoryImpl
 import com.stepalex.finny.data.repository.TaskSettingRepositoryImpl
 import dagger.Module
@@ -14,11 +16,16 @@ import dagger.hilt.components.SingletonComponent
 import kotlinx.serialization.json.Json
 import javax.inject.Singleton
 import com.stepalex.finny.data.source.TaskAssetDataSource
+import com.stepalex.finny.domain.repository.ProfileRepository
 import com.stepalex.finny.domain.repository.TaskRepository
 import com.stepalex.finny.domain.repository.TaskSettingRepository
 import com.stepalex.finny.domain.use_cases.GetAllTasksUseCase
 import com.stepalex.finny.domain.use_cases.GetLastVersionTaskUseCase
 import com.stepalex.finny.domain.use_cases.SyncTasksUseCase
+import com.stepalex.finny.domain.use_cases.profile.CheckGoalsUseCase
+import com.stepalex.finny.domain.use_cases.profile.GetGoalsUseCase
+import com.stepalex.finny.domain.use_cases.profile.GetProfileUseCase
+import com.stepalex.finny.domain.use_cases.profile.UpdateProfileIseCase
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -29,6 +36,11 @@ object AppModule {
     fun provideJson(): Json = Json {
         ignoreUnknownKeys = true
     }
+
+    @Provides
+    @Singleton
+    fun provideSharedPreferences(@ApplicationContext context: Context): SharedPreferences =
+        context.getSharedPreferences("app_shared_prefs", Context.MODE_PRIVATE)
 
     @Provides
     @Singleton
@@ -69,19 +81,34 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideTaskVersionRepository(@ApplicationContext context: Context): TaskSettingRepository {
-        return TaskSettingRepositoryImpl(context)
+    fun provideTaskVersionRepository(sharedPreferences: SharedPreferences): TaskSettingRepository {
+        return TaskSettingRepositoryImpl(sharedPreferences)
     }
 
+    @Provides
+    @Singleton
+    fun provideProfileRepository(
+        json: Json,
+        sharedPreferences: SharedPreferences
+    ): ProfileRepository {
+        return ProfileRepositoryImpl(json, sharedPreferences)
+    }
 
+    // --- USE CASES ---
     @Provides
     @Singleton
     fun provideSyncTasksUseCase(
         assetDataSource: TaskAssetDataSource,
         taskRepository: TaskRepository,
-        versionRepository: TaskSettingRepository
+        versionRepository: TaskSettingRepository,
+        checkGoalsUseCase: CheckGoalsUseCase,
     ): SyncTasksUseCase {
-        return SyncTasksUseCase(assetDataSource, taskRepository, versionRepository)
+        return SyncTasksUseCase(
+            assetDataSource,
+            taskRepository,
+            versionRepository,
+            checkGoalsUseCase
+        )
     }
 
     @Provides
@@ -97,5 +124,29 @@ object AppModule {
         versionRepository: TaskSettingRepository
     ): GetLastVersionTaskUseCase {
         return GetLastVersionTaskUseCase(repository, versionRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideGetProfileUseCase(profileRepository: ProfileRepository): GetProfileUseCase {
+        return GetProfileUseCase(profileRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideUpdateProfileUseCase(profileRepository: ProfileRepository): UpdateProfileIseCase {
+        return UpdateProfileIseCase(profileRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideCheckGoalsUseCase(profileRepository: ProfileRepository): CheckGoalsUseCase {
+        return CheckGoalsUseCase(profileRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideGetGoalsUseCase(profileRepository: ProfileRepository): GetGoalsUseCase {
+        return GetGoalsUseCase(profileRepository)
     }
 }
