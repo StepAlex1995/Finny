@@ -1,4 +1,4 @@
-package com.stepalex.finny.presentation.items
+package com.stepalex.finny.presentation.common.items
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
@@ -189,7 +189,7 @@ fun DrawScope.drawBowTie(
 @Composable
 fun BowTie(
     modifier: Modifier,
-    colorTheme: PetItemColor = PetItemColor.Emerald,
+    colorTheme: PetItemColor = PetItemColor.Red,
     sparklePhase: Float = 0f
 ) {
     Canvas(modifier = modifier) {

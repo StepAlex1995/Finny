@@ -1,4 +1,4 @@
-package com.stepalex.finny.presentation.items
+package com.stepalex.finny.presentation.common.items
 
 
 import androidx.compose.foundation.Canvas

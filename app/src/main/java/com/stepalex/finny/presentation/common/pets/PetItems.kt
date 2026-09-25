@@ -1,16 +1,16 @@
-package com.stepalex.finny.presentation.pets
+package com.stepalex.finny.presentation.common.pets
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.withTransform
-import com.stepalex.finny.presentation.items.PetItemPosition
-import com.stepalex.finny.presentation.items.PetItems
-import com.stepalex.finny.presentation.items.drawBowTie
-import com.stepalex.finny.presentation.items.drawCrown
-import com.stepalex.finny.presentation.items.drawGlasses
-import com.stepalex.finny.presentation.items.drawHairBow
-import com.stepalex.finny.presentation.items.drawNeckTie
-import com.stepalex.finny.presentation.items.drawTopHat
+import com.stepalex.finny.presentation.common.items.PetItemPosition
+import com.stepalex.finny.presentation.common.items.PetItems
+import com.stepalex.finny.presentation.common.items.drawBowTie
+import com.stepalex.finny.presentation.common.items.drawCrown
+import com.stepalex.finny.presentation.common.items.drawGlasses
+import com.stepalex.finny.presentation.common.items.drawHairBow
+import com.stepalex.finny.presentation.common.items.drawNeckTie
+import com.stepalex.finny.presentation.common.items.drawTopHat
 
 
 fun DrawScope.drawPetItems(

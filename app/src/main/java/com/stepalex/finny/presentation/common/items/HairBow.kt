@@ -1,4 +1,4 @@
-package com.stepalex.finny.presentation.items
+package com.stepalex.finny.presentation.common.items
 
 
 import androidx.compose.foundation.Canvas
@@ -26,7 +26,7 @@ fun DrawScope.drawHairBow(
     centerY: Float,
     size: Float,
     rotationDegrees: Float = 0f,       // Новый параметр: угол наклона банта
-    colorTheme: PetItemColor = PetItemColor.Red,
+    colorTheme: PetItemColor = PetItemColor.Blue,
     sparklePhase: Float = 0f
 ) {
     val r = size / 2f

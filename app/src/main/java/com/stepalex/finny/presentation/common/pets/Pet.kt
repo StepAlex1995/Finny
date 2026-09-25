@@ -1,4 +1,4 @@
-package com.stepalex.finny.presentation.pets
+package com.stepalex.finny.presentation.common.pets
 
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.tween
@@ -33,12 +33,12 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.stepalex.finny.presentation.items.PetItems
+import com.stepalex.finny.presentation.common.items.PetItems
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
 
-enum class PetType{
-    BUNNY, BEAR
+enum class PetType(typeName: String) {
+    BUNNY(typeName = "Кроля"), BEAR(typeName = "Мишка")
 }
 
 @Composable
@@ -357,10 +357,20 @@ fun Pet(
                 )*/
                 drawPetBodyAndEars(
                     petType = petType, // Прокидываем тип зверя
-                    w = w, h = h, strokeStyle = strokeStyle, bodyTop = bodyTop, bodyBottom = bodyBottom,
-                    bumpTop = bumpTop, bumpBottom = bumpBottom, bodyElementsProgress = bodyElementsProgress,
-                    tailLeft = tailLeft, tailTop = tailTop, tailRight = tailRight, tailBottom = tailBottom,
-                    haloAlpha = finalHaloAlpha, petColor = petColor
+                    w = w,
+                    h = h,
+                    strokeStyle = strokeStyle,
+                    bodyTop = bodyTop,
+                    bodyBottom = bodyBottom,
+                    bumpTop = bumpTop,
+                    bumpBottom = bumpBottom,
+                    bodyElementsProgress = bodyElementsProgress,
+                    tailLeft = tailLeft,
+                    tailTop = tailTop,
+                    tailRight = tailRight,
+                    tailBottom = tailBottom,
+                    haloAlpha = finalHaloAlpha,
+                    petColor = petColor
                 )
                 // Отрисовка щечек
                 drawPetChecks(w, h, petColor.blushColor)

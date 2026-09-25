@@ -1,4 +1,4 @@
-package com.stepalex.finny.presentation.items
+package com.stepalex.finny.presentation.common.items
 
 import androidx.compose.ui.graphics.Color
 
@@ -14,11 +14,12 @@ data class PetItems(
 data class PetItemParam(
     val isSparkles: Boolean,
     val position: PetItemPosition?,
-    val petItemColor: PetItemColor
+    val petItemColor: PetItemColor?
 )
 
-enum class PetItemPosition(val degrees: Float) {
-    TOP(0f), LEFT(-19f), RIGHT(19f)
+enum class PetItemPosition(val text: String, val degrees: Float) {
+    LEFT("Слева", -19f), TOP("Центр", 0f),
+    RIGHT("Справа", 19f)
 }
 
 enum class PetItemColor(val base: Color, val shadow: Color) {
@@ -27,6 +28,7 @@ enum class PetItemColor(val base: Color, val shadow: Color) {
     Blue(Color(0xFF4DCEF6), Color(0xFF0099CC)),      // Мятно-голубая
     Gold(Color(0xFFFFD400), Color(0xFFD4A000)),      // Жёлто-золотая
     Purple(Color(0xFFB566FF), Color(0xFF7A24D4)),     // Фиолетовая
+
     // --- ДОПОЛНИТЕЛЬНЫЕ ПОДОБРАННЫЕ ЦВЕТА ПОД КОНКРЕТНЫЕ ПРЕДМЕТЫ ---
     //  Кислотный Лайм
     // Очень яркий, светящийся цвет, супер-контрастный для очков и бабочек

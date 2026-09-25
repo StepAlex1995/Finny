@@ -25,7 +25,7 @@ import com.stepalex.finny.domain.use_cases.SyncTasksUseCase
 import com.stepalex.finny.domain.use_cases.profile.CheckGoalsUseCase
 import com.stepalex.finny.domain.use_cases.profile.GetGoalsUseCase
 import com.stepalex.finny.domain.use_cases.profile.GetProfileUseCase
-import com.stepalex.finny.domain.use_cases.profile.UpdateProfileIseCase
+import com.stepalex.finny.domain.use_cases.profile.UpdateProfileUseCase
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -134,8 +134,8 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideUpdateProfileUseCase(profileRepository: ProfileRepository): UpdateProfileIseCase {
-        return UpdateProfileIseCase(profileRepository)
+    fun provideUpdateProfileUseCase(profileRepository: ProfileRepository): UpdateProfileUseCase {
+        return UpdateProfileUseCase(profileRepository)
     }
 
     @Provides

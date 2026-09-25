@@ -1,4 +1,4 @@
-package com.stepalex.finny.presentation.pets
+package com.stepalex.finny.presentation.common.pets
 
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset

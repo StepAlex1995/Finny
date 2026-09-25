@@ -1,5 +1,6 @@
-package com.stepalex.finny.presentation.pets
+package com.stepalex.finny.presentation.common.pets
 
+import android.graphics.Paint
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.setValue
@@ -161,21 +162,21 @@ fun DrawScope.drawContourHeart(p: HeartParticle) {
     }
 
     // 1. Краска для черного контура
-    val strokePaint = android.graphics.Paint().apply {
+    val strokePaint = Paint().apply {
         color = Color.Black.toArgb() // Черный цвет обводки кролика
         isAntiAlias = true
-        style = android.graphics.Paint.Style.STROKE
+        style = Paint.Style.STROKE
         strokeWidth = p.size * 0.14f // Контур, пропорциональный размеру сердца
-        strokeJoin = android.graphics.Paint.Join.ROUND
-        strokeCap = android.graphics.Paint.Cap.ROUND
+        strokeJoin = Paint.Join.ROUND
+        strokeCap = Paint.Cap.ROUND
         alpha = (p.alpha * 255).toInt().coerceIn(0, 255)
     }
 
     // 2. Краска для яркой алой начинки
-    val fillPaint = android.graphics.Paint().apply {
+    val fillPaint = Paint().apply {
         color = android.graphics.Color.parseColor("#FFFC2D55") // Яркий алый цвет
         isAntiAlias = true
-        style = android.graphics.Paint.Style.FILL
+        style = Paint.Style.FILL
         alpha = (p.alpha * 255).toInt().coerceIn(0, 255)
     }
 

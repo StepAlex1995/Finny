@@ -1,4 +1,4 @@
-package com.stepalex.finny.presentation.pets
+package com.stepalex.finny.presentation.common.pets
 
 
 import androidx.compose.animation.core.Animatable
@@ -14,9 +14,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.geometry.Offset
-import com.stepalex.finny.presentation.items.PetItemColor
-import com.stepalex.finny.presentation.items.PetItemPosition
-import com.stepalex.finny.presentation.items.PetItems
+import com.stepalex.finny.presentation.common.items.PetItemColor
+import com.stepalex.finny.presentation.common.items.PetItemPosition
+import com.stepalex.finny.presentation.common.items.PetItems
 import kotlinx.coroutines.delay
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -194,37 +194,37 @@ fun rememberPetInteractionsState(
     var lastCrownColor by remember { mutableStateOf(PetItemColor.Gold) }
     var lastCrownPos by remember { mutableStateOf<PetItemPosition?>(PetItemPosition.TOP) }
     if (petItems?.crown != null) {
-        lastCrownColor = petItems.crown.petItemColor
+        lastCrownColor = petItems.crown.petItemColor?: PetItemColor.Gold
         lastCrownPos = petItems.crown.position
     }
     // Кэшируем цвет и позицию шляпы, пока она существует
     var lastTopHatColor by remember { mutableStateOf(PetItemColor.Red) }
     var lastTopHatPos by remember { mutableStateOf<PetItemPosition?>(PetItemPosition.TOP) }
     if (petItems?.topHat != null) {
-        lastTopHatColor = petItems.topHat.petItemColor
+        lastTopHatColor = petItems.topHat.petItemColor?: PetItemColor.Black
         lastTopHatPos = petItems.topHat.position
     }
     // Кэшируем цвет и позицию бантика, пока он надет
-    var lastHairBowColor by remember { mutableStateOf(PetItemColor.Red) }
+    var lastHairBowColor by remember { mutableStateOf(PetItemColor.Blue) }
     var lastHairBowPos by remember { mutableStateOf<PetItemPosition?>(PetItemPosition.RIGHT) }
     if (petItems?.hairBow != null) {
-        lastHairBowColor = petItems.hairBow.petItemColor
+        lastHairBowColor = petItems.hairBow.petItemColor?: PetItemColor.Blue
         lastHairBowPos = petItems.hairBow.position
     }
     // Кэшируем цвет бабочки, пока она надета
     var lastBowTieColor by remember { mutableStateOf(PetItemColor.Red) }
     if (petItems?.bowTie != null) {
-        lastBowTieColor = petItems.bowTie.petItemColor
+        lastBowTieColor = petItems.bowTie.petItemColor?: PetItemColor.Red
     }
     // Кэшируем цвет галстука, пока он надет
     var lastNeckTieColor by remember { mutableStateOf(PetItemColor.Red) }
     if (petItems?.neckTie != null) {
-        lastNeckTieColor = petItems.neckTie.petItemColor
+        lastNeckTieColor = petItems.neckTie.petItemColor?: PetItemColor.Blue
     }
     // Кэшируем цвет очков, пока они надеты
-    var lastGlassColor by remember { mutableStateOf(PetItemColor.Blue) }
+    var lastGlassColor by remember { mutableStateOf(PetItemColor.Purple) }
     if (petItems?.glass != null) {
-        lastGlassColor = petItems.glass.petItemColor
+        lastGlassColor = petItems.glass.petItemColor?: PetItemColor.Purple
     }
     // ---КОНЕЦ АНИМАЦИИ ПЛАВНОГО ПОЯВЛЕНИЯ/ИСЧЕЗНОВЕНИЯ ОДЕЖДЫ (SCALE) ---
 

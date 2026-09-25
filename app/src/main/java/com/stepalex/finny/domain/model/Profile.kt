@@ -1,5 +1,6 @@
 package com.stepalex.finny.domain.model
 
+import com.stepalex.finny.presentation.common.pets.PetType
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -10,8 +11,20 @@ data class Profile(
     val countMood: Int,
     val isSleep: Boolean,
     val foodInventory: List<FoodInventory>,
-    val itemInventory: List<ItemInventory>
+    val itemInventory: List<ItemInventory>,
+    val petStyle: PetStyle
 )
+
+@Serializable
+data class PetStyle(
+    val petType: PetType,
+    val petColor: PetColorType,
+)
+
+@Serializable
+enum class PetColorType {
+    White, Peach, Chocolate, CuberPurple, Tangerine, Aqua, Indigo, TeddyBear
+}
 
 @Serializable
 data class FoodInventory(
@@ -22,6 +35,7 @@ data class FoodInventory(
 @Serializable
 data class ItemInventory(
     val typeItem: TypeItem,
+    val itemColor: ItemColor,
     val position: ItemPosition,
     val isUsing: Boolean,
     val isAvailable: Boolean
@@ -41,4 +55,22 @@ enum class ItemPosition {
 enum class TypeItem {
     BowTie, Crown, Glass, HairBow,
     NeckTie, TopHat
+}
+
+enum class ItemColor {
+    Black,
+    Red,
+    Blue,
+    Gold,
+    Purple,
+    Lime,
+    Fuchsia,
+    Orange,
+    Teal,
+    Pearl,
+    Emerald,
+    ElectricBlue,
+    Watermelon,
+    Chocolate,
+    Marshmallow
 }

@@ -1,4 +1,4 @@
-package com.stepalex.finny.presentation.pets
+package com.stepalex.finny.presentation.common.pets
 
 import android.graphics.Paint
 import android.graphics.Typeface

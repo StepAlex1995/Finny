@@ -1,4 +1,4 @@
-package com.stepalex.finny.presentation.items
+package com.stepalex.finny.presentation.common.items
 
 
 import androidx.compose.foundation.Canvas
@@ -12,6 +12,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.withTransform
@@ -23,7 +24,7 @@ fun DrawScope.drawGlasses(
     centerX: Float,
     centerY: Float,
     size: Float,
-    colorTheme: PetItemColor = PetItemColor.Red, // Цвет оправы очков
+    colorTheme: PetItemColor = PetItemColor.Purple, // Цвет оправы очков
     sparklePhase: Float = 0f
 ) {
     val r = size / 1f
@@ -98,8 +99,8 @@ fun DrawScope.drawGlasses(
             moveTo(leftLensX + lensRadiusW + (frameStroke * 0.3f), lensY - (lensRadiusH * 0.1f))
             quadraticTo(0f, lensY - (lensRadiusH * 0.25f), rightLensX - lensRadiusW - (frameStroke * 0.3f), lensY - (lensRadiusH * 0.1f))
         }
-        drawPath(path = bridgePath, color = frameColor, style = Stroke(width = frameStroke * 0.7f, cap = androidx.compose.ui.graphics.StrokeCap.Round))
-        drawPath(path = bridgePath, color = outlineColor, style = Stroke(width = strokeWidth, cap = androidx.compose.ui.graphics.StrokeCap.Round))
+        drawPath(path = bridgePath, color = frameColor, style = Stroke(width = frameStroke * 0.7f, cap = StrokeCap.Round))
+        drawPath(path = bridgePath, color = outlineColor, style = Stroke(width = strokeWidth, cap = StrokeCap.Round))
 
         // ================= 5. БОКОВЫЕ ДУЖКИ (ИСПРАВЛЕНО) =================
         // Автоматически рассчитываем точку привязки дужек к внешнему краю оправы, чтоб они не висели в воздухе!
@@ -156,7 +157,7 @@ fun DrawScope.drawGlasses(
 @Composable
 fun Glasses(
     modifier: Modifier,
-    colorTheme: PetItemColor = PetItemColor.Blue,
+    colorTheme: PetItemColor = PetItemColor.Purple,
     sparklePhase: Float = 0f,
 ) {
     Canvas(modifier = modifier) {

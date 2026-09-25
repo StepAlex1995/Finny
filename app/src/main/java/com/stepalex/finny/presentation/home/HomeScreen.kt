@@ -17,6 +17,8 @@ import androidx.compose.ui.unit.dp
 import com.stepalex.finny.presentation.common.GameButton
 import com.stepalex.finny.presentation.goals.GameDialog
 import com.stepalex.finny.presentation.common.TypeGlare
+import com.stepalex.finny.presentation.create_pet.ConfirmSelectPetDialogAnimatable
+import com.stepalex.finny.presentation.create_pet.CreatePetScreenAnimatable
 import com.stepalex.finny.presentation.goals.GameDialogAnimatable
 import com.stepalex.finny.presentation.goals.GoalScreenAnimatable
 import com.stepalex.finny.presentation.pet_room.PetRoom
@@ -28,7 +30,8 @@ fun HomeScreen(event: ((HomeEvent) -> Unit), state: HomeState) {
 
         GoalScreenAnimatable(event, state)
         GameDialogAnimatable(event, state)
-
+        CreatePetScreenAnimatable(event, state)
+        ConfirmSelectPetDialogAnimatable(event,state)
     }
 
     /* var type by remember { mutableStateOf(PetType.BUNNY) }

@@ -1,4 +1,4 @@
-package com.stepalex.finny.presentation.pets
+package com.stepalex.finny.presentation.common.pets
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
@@ -115,6 +115,11 @@ data class PetColor(
             fillColor = Color(0xFFD2D7DF),
             outlineColor = Color(0xFF28313B),
             blushColor = Color(0xFFFFD4C4)     
+        )
+        val allColors = listOf(
+            White, Peach, Chocolate, /*Flamingo, NeonLime,*/
+            CyberPurple, Tangerine, Aqua, /*Banana,*/ Indigo,
+            /*CandyRed, AppleGreen,*/ TeddyBear/*, SilverGrey*/
         )
     }
 }
