@@ -66,6 +66,8 @@ import com.stepalex.finny.presentation.common.items.PetItemParam
 import com.stepalex.finny.presentation.common.items.PetItemPosition
 import com.stepalex.finny.presentation.common.items.PetItems
 import com.stepalex.finny.presentation.common.items.TopHat
+import com.stepalex.finny.presentation.common.items.convertItemColor
+import com.stepalex.finny.presentation.common.items.getPetItems
 import com.stepalex.finny.presentation.common.pets.Pet
 import com.stepalex.finny.presentation.common.pets.PetAction
 import com.stepalex.finny.presentation.common.pets.PetColor
@@ -73,6 +75,7 @@ import com.stepalex.finny.presentation.common.pets.PetListener
 import com.stepalex.finny.presentation.common.pets.PetMood
 import com.stepalex.finny.presentation.common.pets.PetStage
 import com.stepalex.finny.presentation.common.pets.PetType
+import com.stepalex.finny.presentation.common.pets.getPetColorScheme
 
 
 @Composable
@@ -95,73 +98,6 @@ fun CreatePetScreenAnimatable(event: ((HomeEvent) -> Unit), state: HomeState) {
             onBack = { event(HomeEvent.ShowHomeWindow) },
             createPet = {})
     }
-}
-
-private fun mapItem(type: TypeItem, items: List<ItemInventory>): PetItemParam? {
-    val inventoryItem = items.find { it.typeItem == type && it.isUsing } ?: return null
-
-    // Маппим позицию из инвентаря в позицию для питомца
-    val petPosition = when (inventoryItem.position) {
-        ItemPosition.Left -> PetItemPosition.LEFT
-        ItemPosition.Top -> PetItemPosition.TOP
-        ItemPosition.Right -> PetItemPosition.RIGHT
-    }
-
-    return PetItemParam(
-        isSparkles = true, // Задайте true/false на основе вашей логики (например, если предмет эпический)
-        position = petPosition, petItemColor = convertPetItemColor(inventoryItem.itemColor)
-    )
-}
-
-private fun convertItemColor(itemColor: PetItemColor): ItemColor {
-    return when (itemColor) {
-        PetItemColor.Black -> ItemColor.Black
-        PetItemColor.Red -> ItemColor.Red
-        PetItemColor.Blue -> ItemColor.Blue
-        PetItemColor.Gold -> ItemColor.Gold
-        PetItemColor.Purple -> ItemColor.Purple
-        PetItemColor.Lime -> ItemColor.Lime
-        PetItemColor.Fuchsia -> ItemColor.Fuchsia
-        PetItemColor.Orange -> ItemColor.Orange
-        PetItemColor.Teal -> ItemColor.Teal
-        PetItemColor.Pearl -> ItemColor.Pearl
-        PetItemColor.Emerald -> ItemColor.Emerald
-        PetItemColor.ElectricBlue -> ItemColor.ElectricBlue
-        PetItemColor.Watermelon -> ItemColor.Watermelon
-        PetItemColor.Chocolate -> ItemColor.Chocolate
-        PetItemColor.Marshmallow -> ItemColor.Marshmallow
-    }
-}
-
-private fun convertPetItemColor(itemColor: ItemColor): PetItemColor {
-    return when (itemColor) {
-        ItemColor.Black -> PetItemColor.Black
-        ItemColor.Red -> PetItemColor.Red
-        ItemColor.Blue -> PetItemColor.Blue
-        ItemColor.Gold -> PetItemColor.Gold
-        ItemColor.Purple -> PetItemColor.Purple
-        ItemColor.Lime -> PetItemColor.Lime
-        ItemColor.Fuchsia -> PetItemColor.Fuchsia
-        ItemColor.Orange -> PetItemColor.Orange
-        ItemColor.Teal -> PetItemColor.Teal
-        ItemColor.Pearl -> PetItemColor.Pearl
-        ItemColor.Emerald -> PetItemColor.Emerald
-        ItemColor.ElectricBlue -> PetItemColor.ElectricBlue
-        ItemColor.Watermelon -> PetItemColor.Watermelon
-        ItemColor.Chocolate -> PetItemColor.Chocolate
-        ItemColor.Marshmallow -> PetItemColor.Marshmallow
-    }
-}
-
-private fun getPetItems(items: List<ItemInventory>): PetItems {
-    return PetItems(
-        topHat = mapItem(TypeItem.TopHat, items),
-        neckTie = mapItem(TypeItem.NeckTie, items),
-        hairBow = mapItem(TypeItem.HairBow, items),
-        glass = mapItem(TypeItem.Glass, items),
-        crown = mapItem(TypeItem.Crown, items),
-        bowTie = mapItem(TypeItem.BowTie, items)
-    )
 }
 
 private fun convertItemPosition(petItemPosition: PetItemParam?): ItemPosition {
@@ -596,18 +532,6 @@ fun CreatePetScreen(
 }
 
 
-private fun getPetColorScheme(petColorType: PetColorType): PetColor {
-    return when (petColorType) {
-        White -> PetColor.White
-        Peach -> PetColor.Peach
-        Chocolate -> PetColor.Chocolate
-        CuberPurple -> PetColor.CyberPurple
-        Tangerine -> PetColor.Tangerine
-        Aqua -> PetColor.Aqua
-        Indigo -> PetColor.Indigo
-        TeddyBear -> PetColor.TeddyBear
-    }
-}
 
 
 fun updateItemInState(category: ItemCategory, param: PetItemParam?): PetItems {

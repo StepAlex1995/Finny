@@ -1,4 +1,4 @@
-package com.stepalex.finny.presentation.pet_room
+package com.stepalex.finny.presentation.pet_room_bgr
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable

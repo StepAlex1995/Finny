@@ -42,8 +42,13 @@ data class ItemInventory(
 )
 
 @Serializable
-enum class TypeFood {
-    Carrot
+enum class TypeFood(val text: String) {
+    Carrot("Морковка"),
+    Grapes("Виноград"),
+    Cherry("Вишня"),
+    Apple("Яблоко"),
+    Cabbage("Капуста"),
+    Pear("Груша"),
 }
 
 @Serializable
@@ -52,9 +57,9 @@ enum class ItemPosition {
 }
 
 @Serializable
-enum class TypeItem {
-    BowTie, Crown, Glass, HairBow,
-    NeckTie, TopHat
+enum class TypeItem(val text: String) {
+    BowTie("Бабочка"), Crown("Короона"), Glass("Очки"), HairBow("Бант"),
+    NeckTie("Галстук"), TopHat("Шляпка")
 }
 
 enum class ItemColor {

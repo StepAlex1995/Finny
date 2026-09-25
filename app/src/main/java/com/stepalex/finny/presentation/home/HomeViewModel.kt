@@ -112,6 +112,26 @@ class HomeViewModel @Inject constructor(
                                 FoodInventory(
                                     typeFood = TypeFood.Carrot,
                                     count = 1
+                                ),
+                                FoodInventory(
+                                    typeFood = TypeFood.Grapes,
+                                    count = 0
+                                ),
+                                FoodInventory(
+                                    typeFood = TypeFood.Cherry,
+                                    count = 0
+                                ),
+                                FoodInventory(
+                                    typeFood = TypeFood.Apple,
+                                    count = 0
+                                ),
+                                FoodInventory(
+                                    typeFood = TypeFood.Cabbage,
+                                    count = 0
+                                ),
+                                FoodInventory(
+                                    typeFood = TypeFood.Pear,
+                                    count = 0
                                 )
                             ),
                             itemInventory = listOf(
@@ -180,6 +200,7 @@ class HomeViewModel @Inject constructor(
             HomeEvent.SelectPet -> {
                 homeState = homeState.copy(showDialog = ShowDialog.SelectPet)
             }
+
             HomeEvent.HideDialogSelectPet -> {
                 homeState = homeState.copy(showDialog = ShowDialog.None)
             }
@@ -188,11 +209,17 @@ class HomeViewModel @Inject constructor(
                 if (homeState.profile != null) {
                     viewModelScope.launch {
                         updateProfileUseCase(homeState.profile!!)
-                        homeState = homeState.copy(openWindow = OpenWindow.None, showDialog = ShowDialog.None)
+                        homeState = homeState.copy(
+                            openWindow = OpenWindow.None,
+                            showDialog = ShowDialog.None
+                        )
                     }
                 }
             }
 
+            is HomeEvent.UpdateProfile -> {
+                homeState = homeState.copy(profile = event.profile)
+            }
         }
     }
 }

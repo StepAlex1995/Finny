@@ -17,6 +17,7 @@ sealed class HomeEvent {
     data object HideDialogSelectPet : HomeEvent()
     data object SaveProfile : HomeEvent()
     data class UpdatePetItems(val petItems: List<ItemInventory>) : HomeEvent()
+    data class UpdateProfile(val profile: Profile) : HomeEvent()
 }
 
 data class HomeState(

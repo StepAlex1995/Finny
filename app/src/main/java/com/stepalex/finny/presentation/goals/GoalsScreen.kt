@@ -7,7 +7,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -24,7 +23,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -45,7 +43,7 @@ import com.stepalex.finny.presentation.common.OutlineText
 import com.stepalex.finny.presentation.home.HomeEvent
 import com.stepalex.finny.presentation.home.HomeState
 import com.stepalex.finny.presentation.home.OpenWindow
-import com.stepalex.finny.presentation.pet_room.Money
+import com.stepalex.finny.presentation.pet_room_bgr.Money
 
 @Composable
 fun GoalScreenAnimatable(event: ((HomeEvent) -> Unit), state: HomeState) {

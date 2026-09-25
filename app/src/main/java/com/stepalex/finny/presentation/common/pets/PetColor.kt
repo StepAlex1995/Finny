@@ -2,6 +2,15 @@ package com.stepalex.finny.presentation.common.pets
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
+import com.stepalex.finny.domain.model.PetColorType
+import com.stepalex.finny.domain.model.PetColorType.Aqua
+import com.stepalex.finny.domain.model.PetColorType.Chocolate
+import com.stepalex.finny.domain.model.PetColorType.CuberPurple
+import com.stepalex.finny.domain.model.PetColorType.Indigo
+import com.stepalex.finny.domain.model.PetColorType.Peach
+import com.stepalex.finny.domain.model.PetColorType.Tangerine
+import com.stepalex.finny.domain.model.PetColorType.TeddyBear
+import com.stepalex.finny.domain.model.PetColorType.White
 
 @Immutable
 data class PetColor(
@@ -114,12 +123,25 @@ data class PetColor(
         val SilverGrey = PetColor(
             fillColor = Color(0xFFD2D7DF),
             outlineColor = Color(0xFF28313B),
-            blushColor = Color(0xFFFFD4C4)     
+            blushColor = Color(0xFFFFD4C4)
         )
         val allColors = listOf(
             White, Peach, Chocolate, /*Flamingo, NeonLime,*/
             CyberPurple, Tangerine, Aqua, /*Banana,*/ Indigo,
             /*CandyRed, AppleGreen,*/ TeddyBear/*, SilverGrey*/
         )
+    }
+}
+
+fun getPetColorScheme(petColorType: PetColorType): PetColor {
+    return when (petColorType) {
+        White -> PetColor.White
+        Peach -> PetColor.Peach
+        Chocolate -> PetColor.Chocolate
+        CuberPurple -> PetColor.CyberPurple
+        Tangerine -> PetColor.Tangerine
+        Aqua -> PetColor.Aqua
+        Indigo -> PetColor.Indigo
+        TeddyBear -> PetColor.TeddyBear
     }
 }

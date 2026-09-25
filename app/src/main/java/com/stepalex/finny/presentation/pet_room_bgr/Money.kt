@@ -1,4 +1,4 @@
-package com.stepalex.finny.presentation.pet_room
+package com.stepalex.finny.presentation.pet_room_bgr
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box

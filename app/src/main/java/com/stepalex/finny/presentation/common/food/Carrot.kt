@@ -1,4 +1,4 @@
-package com.stepalex.finny.presentation.pet_room
+package com.stepalex.finny.presentation.common.food
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
@@ -20,7 +20,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.lerp
 
-fun DrawScope.drawFood(
+fun DrawScope.drawCarrot(
     centerX: Float,
     centerY: Float,
     size: Float,
@@ -196,12 +196,12 @@ fun DrawScope.drawFood(
 }
 
 @Composable
-fun Food(
+fun Carrot(
     modifier: Modifier,
     isFilled: Boolean
 ) {
     Canvas(modifier = modifier) {
-        drawFood(
+        drawCarrot(
             size.width * 0.5f,
             size.height * 0.5f,
             size = size.width * 0.85f,
@@ -212,15 +212,15 @@ fun Food(
 
 @Preview
 @Composable
-fun FoodNotFilledPreview() {
+fun CarrotNotFilledPreview() {
     Box(modifier = Modifier.size(200.dp), contentAlignment = Alignment.Center) {
-        Food(modifier = Modifier.fillMaxSize(), isFilled = false)
+        Carrot(modifier = Modifier.fillMaxSize(), isFilled = false)
     }
 }
 @Preview
 @Composable
-fun FoodFilledPreview() {
+fun CarrotFilledPreview() {
     Box(modifier = Modifier.size(200.dp), contentAlignment = Alignment.Center) {
-        Food(modifier = Modifier.fillMaxSize(), isFilled = true)
+        Carrot(modifier = Modifier.fillMaxSize(), isFilled = true)
     }
 }

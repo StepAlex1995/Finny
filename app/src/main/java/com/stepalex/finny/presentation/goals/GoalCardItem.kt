@@ -4,7 +4,6 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -36,7 +35,7 @@ import androidx.compose.ui.unit.sp
 import com.stepalex.finny.domain.model.Goal
 import com.stepalex.finny.domain.model.GoalState
 import com.stepalex.finny.domain.model.GoalType
-import com.stepalex.finny.presentation.pet_room.Money
+import com.stepalex.finny.presentation.pet_room_bgr.Money
 
 @Composable
 fun GoalCardItem(goal: Goal, onClick: () -> Unit) {
