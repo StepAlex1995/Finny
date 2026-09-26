@@ -209,7 +209,7 @@ fun PetRoom(modifier: Modifier, event: (HomeEvent) -> Unit, state: HomeState) {
                 modifier = Modifier
                     .size(300.dp)
                     .align(alignment = Alignment.Center)
-                .padding(bottom = 50.dp),
+                    .padding(bottom = 50.dp),
                 stage = when {
                     profile.countMoney.toFloat() / profile.currentGoal.cost < 0.33 -> PetStage.Baby
                     profile.countMoney.toFloat() / profile.currentGoal.cost < 0.66 -> PetStage.Teenager
@@ -231,8 +231,9 @@ fun PetRoom(modifier: Modifier, event: (HomeEvent) -> Unit, state: HomeState) {
                     }
                 })
             // НИЖНЯЯ ПАНЕЛЬ
-            BottomShopPanel(
+            BottomPetRoomPanel(
                 profile = profile,
+                periodState = state.periodState,
                 modifier = Modifier
                     .fillMaxWidth()
                     .align(alignment = Alignment.BottomCenter),
@@ -247,8 +248,14 @@ fun PetRoom(modifier: Modifier, event: (HomeEvent) -> Unit, state: HomeState) {
                         if (it.typeItem == selectedItem.typeItem) it.copy(isUsing = !it.isUsing) else it
                     }
                     event(HomeEvent.UpdatePetItems(updatedItems))
-                }
-            )
+                },
+                onStartTaskClick = {
+                    event(HomeEvent.CompleteStartTask(1))
+                },
+                onQuizClick = {
+                    event(HomeEvent.CompleteQuizTask(1))
+                },
+                onSkipTimer = { event(HomeEvent.SkipTimer) })
         }
     }
 }

@@ -24,4 +24,24 @@ class TaskSettingRepositoryImpl(private val prefs: SharedPreferences) :
     override suspend fun saveDurationPeriod(hours: Int) {
         prefs.edit { putInt("duration_period", hours) }
     }
+
+    override suspend fun getPeriodStartTime(): Long =
+        prefs.getLong("period_start_time", System.currentTimeMillis())
+
+    override suspend fun savePeriodStartTime(time: Long) {
+        prefs.edit { putLong("period_start_time", time) }
+    }
+
+    override suspend fun getCompletedTaskCount(): Int = prefs.getInt("completed_task_count", 0)
+
+    override suspend fun saveCompletedTaskCount(count: Int) {
+        prefs.edit { putInt("completed_task_count", count) }
+    }
+
+    override suspend fun isStartTaskCompleted(): Boolean =
+        prefs.getBoolean("start_task_completed", false)
+
+    override suspend fun saveStartTaskCompleted(isStarted: Boolean) {
+        prefs.edit { putBoolean("start_task_completed", isStarted) }
+    }
 }

@@ -18,6 +18,15 @@ sealed class HomeEvent {
     data object SaveProfile : HomeEvent()
     data class UpdatePetItems(val petItems: List<ItemInventory>) : HomeEvent()
     data class UpdateProfile(val profile: Profile) : HomeEvent()
+
+    //выполнена стартовая задача(работа)
+    data class CompleteStartTask(val todoPrams: Int) : HomeEvent()
+
+    //Пройден очередной квиз
+    data class CompleteQuizTask(val todoParams: Int) : HomeEvent()
+
+    //Пропуск ожидания таймера для тестирования
+    data object SkipTimer : HomeEvent()
 }
 
 data class HomeState(
@@ -25,7 +34,8 @@ data class HomeState(
     val showDialog: ShowDialog,//пока можно удалить
     val profile: Profile?,
     val goals: List<Goal>,
-    val selectGoal: Goal?
+    val selectGoal: Goal?,
+    val periodState: PeriodState = PeriodState.Locked,
 )
 
 enum class OpenWindow {
@@ -38,4 +48,11 @@ enum class ShowDialog {
     None,
     SelectGoal,
     SelectPet
+}
+
+// Состояние периода
+sealed interface PeriodState {
+    data object Locked : PeriodState // Нужно выполнить стартовую задачу
+    data class InProgress(val completedCount: Int) : PeriodState // Доступны квизы (0..4)
+    data class WaitingForNextPeriod(val remainingTime: String) : PeriodState // Показываем таймер
 }

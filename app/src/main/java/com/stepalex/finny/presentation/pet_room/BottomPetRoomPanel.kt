@@ -4,6 +4,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -11,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.stepalex.finny.domain.model.FoodInventory
@@ -31,28 +35,30 @@ import com.stepalex.finny.presentation.common.food.Carrot
 import com.stepalex.finny.presentation.common.food.Cherry
 import com.stepalex.finny.presentation.common.food.Grapes
 import com.stepalex.finny.presentation.common.food.Pear
+import com.stepalex.finny.presentation.home.PeriodState
 import com.stepalex.finny.utils.Fonts
 
 
 enum class PetRoomTab(val title: String) {
-    Events("События"),
-    Food("Еда"),
-    Items("Предметы")
+    Events("События"), Food("Еда"), Items("Предметы")
 }
 
 
 @Composable
-fun BottomShopPanel(
+fun BottomPetRoomPanel(
     profile: Profile,
+    periodState: PeriodState,
     modifier: Modifier = Modifier,
     onFoodClick: (FoodInventory) -> Unit,
-    onItemClick: (ItemInventory) -> Unit
+    onItemClick: (ItemInventory) -> Unit,
+    onStartTaskClick: () -> Unit,
+    onQuizClick: () -> Unit,
+    onSkipTimer: () -> Unit
 ) {
     var selectedTab by remember { mutableStateOf(PetRoomTab.Food) }
 
     Column(
-        modifier = modifier
-            .fillMaxWidth()
+        modifier = modifier.fillMaxWidth()
     ) {
         // 1. Ряд вкладок (Коричневые переключатели)
         Row(
@@ -73,8 +79,7 @@ fun BottomShopPanel(
                         .background(if (isSelected) Color(0xFF6E4E37) else Color(0xFFAC8A64))
                         .clickable { selectedTab = tab }
                         .padding(vertical = 12.dp),
-                    contentAlignment = Alignment.Center
-                ) {
+                    contentAlignment = Alignment.Center) {
                     Text(
                         text = tab.title,
                         color = Color.White,
@@ -85,7 +90,6 @@ fun BottomShopPanel(
             }
         }
 
-        // 2. Горизонтальный список контента под вкладками
         // 2. Контейнер сетки (фиксированная высота под контент)
         Column(
             modifier = Modifier
@@ -99,35 +103,35 @@ fun BottomShopPanel(
                 PetRoomTab.Food -> {
                     // Один ряд из 4-х элементов для Еды
                     FixedTwoRowItemsGrid(
-                        items = profile.foodInventory,
-                        itemContent = { foodItem ->
+                        items = profile.foodInventory, itemContent = { foodItem ->
                             FoodCard(foodItem = foodItem, onClick = { onFoodClick(foodItem) })
-                        }
-                    )
+                        })
                 }
 
                 PetRoomTab.Items -> {
                     // Два ряда по 3 элемента для Предметов (одежды)
                     FixedTwoRowItemsGrid(
-                        items = profile.itemInventory,
-                        itemContent = { itemInventory ->
+                        items = profile.itemInventory, itemContent = { itemInventory ->
                             ItemCard(
                                 itemInventory = itemInventory,
                                 onClick = { onItemClick(itemInventory) })
-                        }
-                    )
+                        })
                 }
 
                 PetRoomTab.Events -> {
                     Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
+                        modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
                     ) {
-                        Text(
+                        EventsPanel(
+                            periodState = periodState,
+                            onStartTaskClick = onStartTaskClick,
+                            onQuizClick = onQuizClick,
+                            onSkipTimer = onSkipTimer
+                        )/*Text(
                             "Игрушек пока нет",
                             color = Color.Gray,
                             fontFamily = Fonts.RegularTextFontFamily
-                        )
+                        )*/
                     }
                 }
             }
@@ -136,12 +140,78 @@ fun BottomShopPanel(
 
 }
 
+@Composable
+fun EventsPanel(
+    periodState: PeriodState,
+    onStartTaskClick: () -> Unit,
+    onQuizClick: () -> Unit,
+    onSkipTimer: () -> Unit
+) {
+    Box(
+        modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
+    ) {
+        when (periodState) {
+            is PeriodState.Locked -> {
+                // Шаг 1: Доступна только обязательная задача (Работа)
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("Новый период начался!", style = MaterialTheme.typography.headlineSmall)
+                    Text("Выполните вводное задание, чтобы открыть доступ к квизам.")
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(onClick = onStartTaskClick) {
+                        Text("Выполнить стартовое задание")
+                    }
+                }
+            }
+
+            is PeriodState.InProgress -> {
+                // Шаг 2: Доступны квизы (показываем счетчик 0..4 из 5)
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("Доступны задания периода", style = MaterialTheme.typography.headlineSmall)
+                    Text(
+                        "Выполнено задач: ${periodState.completedCount} / 5",
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(24.dp))
+                    Button(onClick = onQuizClick) {
+                        Text("Пройти квиз")
+                    }
+                }
+            }
+
+            is PeriodState.WaitingForNextPeriod -> {
+                // Шаг 3: Все 5 решено, тикает таймер
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("Все задачи выполнены!", style = MaterialTheme.typography.headlineSmall)
+                    Text("Следующий период откроется через:")
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = periodState.remainingTime,
+                        style = MaterialTheme.typography.displayMedium.copy(
+                            fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary
+                        )
+                    )
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    // КНОПКА МГНОВЕННОГО СБРОСА ТАЙМЕРА
+                    Button(
+                        onClick = onSkipTimer,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.error // Сделаем её приметной
+                        )
+                    ) {
+                        Text("Сбросить время (Пропустить)")
+                    }
+                }
+            }
+        }
+    }
+}
+
 
 // РАЗМЕТКА 1: Один горизонтальный ряд для 4-х элементов еды
 @Composable
 fun <T> FixedOneRowFoodGrid(
-    items: List<T>,
-    itemContent: @Composable (T) -> Unit
+    items: List<T>, itemContent: @Composable (T) -> Unit
 ) {
     Row(
         modifier = Modifier.fillMaxSize(),
@@ -167,17 +237,14 @@ fun <T> FixedOneRowFoodGrid(
 // РАЗМЕТКА 2: Два ряда по 3 элемента для 6 предметов
 @Composable
 fun <T> FixedTwoRowItemsGrid(
-    items: List<T>,
-    itemContent: @Composable (T) -> Unit
+    items: List<T>, itemContent: @Composable (T) -> Unit
 ) {
     Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         // Первый ряд (индексы 0, 1, 2)
         Row(
-            modifier = Modifier.weight(1f),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            modifier = Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             for (i in 0..2) {
                 Box(
@@ -194,8 +261,7 @@ fun <T> FixedTwoRowItemsGrid(
 
         // Второй ряд (индексы 3, 4, 5)
         Row(
-            modifier = Modifier.weight(1f),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            modifier = Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             for (i in 3..5) {
                 Box(
@@ -221,8 +287,7 @@ fun FoodCard(foodItem: FoodInventory, onClick: () -> Unit) {
             .background(Color(0xFFFFF5E4))
             .clickable { onClick() }
             .padding(4.dp),
-        contentAlignment = Alignment.Center
-    ) {
+        contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             when (foodItem.typeFood) {
                 TypeFood.Carrot -> Carrot(modifier = Modifier.size(48.dp), isFilled = true)
@@ -266,8 +331,7 @@ fun ItemCard(itemInventory: ItemInventory, onClick: () -> Unit) {
             .background(backgroundColor)
             .clickable(enabled = itemInventory.isAvailable) { onClick() }
             .padding(4.dp),
-        contentAlignment = Alignment.Center
-    ) {
+        contentAlignment = Alignment.Center) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.graphicsLayer(alpha = contentAlpha)
@@ -313,8 +377,7 @@ fun ItemCard(itemInventory: ItemInventory, onClick: () -> Unit) {
                     text = itemInventory.typeItem.text,
                     fontSize = 11.sp,
                     fontFamily = Fonts.RegularTextFontFamily
-                )
-                /*Text(
+                )/*Text(
                 text = itemInventory.itemColor.name,
                 fontSize = 9.sp,
                 color = Color.Gray,

@@ -19,8 +19,14 @@ import com.stepalex.finny.data.source.TaskAssetDataSource
 import com.stepalex.finny.domain.repository.ProfileRepository
 import com.stepalex.finny.domain.repository.TaskRepository
 import com.stepalex.finny.domain.repository.TaskSettingRepository
+import com.stepalex.finny.domain.use_cases.CheckStartTaskCompletedUseCase
 import com.stepalex.finny.domain.use_cases.GetAllTasksUseCase
+import com.stepalex.finny.domain.use_cases.GetCompletedTasksCountUseCase
 import com.stepalex.finny.domain.use_cases.GetLastVersionTaskUseCase
+import com.stepalex.finny.domain.use_cases.GetPeriodStartTimeUseCase
+import com.stepalex.finny.domain.use_cases.SaveCompletedTaskCountUseCase
+import com.stepalex.finny.domain.use_cases.SavePeriodStartTimeUseCase
+import com.stepalex.finny.domain.use_cases.SaveStartTaskCompletedUseCase
 import com.stepalex.finny.domain.use_cases.SyncTasksUseCase
 import com.stepalex.finny.domain.use_cases.profile.CheckGoalsUseCase
 import com.stepalex.finny.domain.use_cases.profile.GetGoalsUseCase
@@ -46,9 +52,7 @@ object AppModule {
     @Singleton
     fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase {
         return Room.databaseBuilder(
-            context,
-            AppDatabase::class.java,
-            "app_database.db"
+            context, AppDatabase::class.java, "app_database.db"
         )
             // .fallbackToDestructiveMigration() // Раскомментировать, если при изменении структуры БД в будущем будем просто очищать её, а не писать миграции
             .build()
@@ -63,8 +67,7 @@ object AppModule {
     @Provides
     @Singleton
     fun provideTaskAssetDataSource(
-        @ApplicationContext context: Context,
-        json: Json
+        @ApplicationContext context: Context, json: Json
     ): TaskAssetDataSource {
         return TaskAssetDataSource(context, json)
     }
@@ -72,9 +75,7 @@ object AppModule {
     @Provides
     @Singleton
     fun provideTaskRepository(
-        dataSource: TaskAssetDataSource,
-        taskDao: TaskDao,
-        json: Json
+        dataSource: TaskAssetDataSource, taskDao: TaskDao, json: Json
     ): TaskRepository {
         return TaskRepositoryImpl(dataSource, taskDao, json)
     }
@@ -88,8 +89,7 @@ object AppModule {
     @Provides
     @Singleton
     fun provideProfileRepository(
-        json: Json,
-        sharedPreferences: SharedPreferences
+        json: Json, sharedPreferences: SharedPreferences
     ): ProfileRepository {
         return ProfileRepositoryImpl(json, sharedPreferences)
     }
@@ -104,10 +104,7 @@ object AppModule {
         checkGoalsUseCase: CheckGoalsUseCase,
     ): SyncTasksUseCase {
         return SyncTasksUseCase(
-            assetDataSource,
-            taskRepository,
-            versionRepository,
-            checkGoalsUseCase
+            assetDataSource, taskRepository, versionRepository, checkGoalsUseCase
         )
     }
 
@@ -120,8 +117,7 @@ object AppModule {
     @Provides
     @Singleton
     fun provideGetLastVersionTaskUseCase(
-        repository: TaskRepository,
-        versionRepository: TaskSettingRepository
+        repository: TaskRepository, versionRepository: TaskSettingRepository
     ): GetLastVersionTaskUseCase {
         return GetLastVersionTaskUseCase(repository, versionRepository)
     }
@@ -148,5 +144,41 @@ object AppModule {
     @Singleton
     fun provideGetGoalsUseCase(profileRepository: ProfileRepository): GetGoalsUseCase {
         return GetGoalsUseCase(profileRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideGetPeriodStartTimeUseCase(taskSettingRepository: TaskSettingRepository): GetPeriodStartTimeUseCase {
+        return GetPeriodStartTimeUseCase(taskSettingRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideSavePeriodStartTimeUseCase(taskSettingRepository: TaskSettingRepository): SavePeriodStartTimeUseCase {
+        return SavePeriodStartTimeUseCase(taskSettingRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideGetCompleteTaskCountUseCase(taskSettingRepository: TaskSettingRepository): GetCompletedTasksCountUseCase {
+        return GetCompletedTasksCountUseCase(taskSettingRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideSaveCompleteTaskCountUseCase(taskSettingRepository: TaskSettingRepository): SaveCompletedTaskCountUseCase {
+        return SaveCompletedTaskCountUseCase(taskSettingRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideCheckStartTaskCompletedUseCase(taskSettingRepository: TaskSettingRepository): CheckStartTaskCompletedUseCase {
+        return CheckStartTaskCompletedUseCase(taskSettingRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideSaveStartTaskCompletedUseCase(taskSettingRepository: TaskSettingRepository): SaveStartTaskCompletedUseCase {
+        return SaveStartTaskCompletedUseCase(taskSettingRepository)
     }
 }
