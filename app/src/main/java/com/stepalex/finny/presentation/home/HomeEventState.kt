@@ -37,6 +37,10 @@ sealed class HomeEvent {
 
     //Пропуск ожидания таймера для тестирования
     data object SkipTimer : HomeEvent()
+
+    data class ShowPeriodHistory(val periodId: Int) : HomeEvent()  //показать результаты по периодам
+    data object ShowPreviewsPeriodHistory : HomeEvent()  //показать результаты Предыдущему периоду
+    data object ShowNextPeriodHistory : HomeEvent()  //показать результаты Следующему периоду
 }
 
 data class HomeState(
@@ -63,6 +67,7 @@ enum class OpenWindow {
     ShowResultTaskAnswer,    //Показать результат выбора ответа по событию
     ShowStartPeriodInfo,    //Показать результаты за прошедший период
     ShowPeriodResult,    //Показать результаты по текущему периоду
+    ShowPeriodHistory,    //Показать результаты по периодам, то же окно что и ShowPeriodResult, ток можно переключаться между периодами
 }
 
 enum class ShowDialog {

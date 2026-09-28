@@ -34,6 +34,7 @@ import com.stepalex.finny.domain.use_cases.SaveStartTaskCompletedUseCase
 import com.stepalex.finny.domain.use_cases.SyncTasksUseCase
 import com.stepalex.finny.domain.use_cases.period.GetCurrentTaskUseCase
 import com.stepalex.finny.domain.use_cases.period.GetDetailedPeriodHistoryUseCase
+import com.stepalex.finny.domain.use_cases.period.GetHistoryByPeriodIdUseCase
 import com.stepalex.finny.domain.use_cases.period.StartNewPeriodUseCase
 import com.stepalex.finny.domain.use_cases.period.SubmitTaskAnswerUseCase
 import com.stepalex.finny.domain.use_cases.profile.CheckGoalsUseCase
@@ -263,4 +264,16 @@ object AppModule {
         )
     }
 
+    @Provides
+    @Singleton
+    fun provideGetHistoryByPeriodIdUseCase(
+        periodRepository: PeriodRepository,
+        taskRepository: TaskRepository,
+    ): GetHistoryByPeriodIdUseCase {
+        return GetHistoryByPeriodIdUseCase(
+            periodRepository = periodRepository,
+            taskRepository = taskRepository,
+        )
+    }
+    
 }

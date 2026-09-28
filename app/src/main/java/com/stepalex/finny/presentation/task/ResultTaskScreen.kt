@@ -105,7 +105,8 @@ fun ResultTaskScreen(
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color.White, shape = RoundedCornerShape(16.dp)),
+                    .background(Color.White, shape = RoundedCornerShape(24.dp))
+                    .border(width = 2.dp, Color.DarkGray, shape = RoundedCornerShape(24.dp)),
                 contentPadding = PaddingValues(
                     start = 24.dp,
                     top = 24.dp,

@@ -1,13 +1,9 @@
 package com.stepalex.finny.presentation.pet_room
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,7 +24,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
@@ -281,21 +276,32 @@ fun PetRoom(modifier: Modifier, event: (HomeEvent) -> Unit, state: HomeState) {
             }
 
 
-            // 1. Создаем триггер для анимации
+            // --- Кнопка истории ---
+            val isVisibleHourglass = state.openWindow == OpenWindow.None &&
+                    state.profile.currentPeriodIndex > 1
+            val iconHourglassSize by animateDpAsState(
+                targetValue = if (isVisibleHourglass) 56.dp else 0.dp,
+                animationSpec = tween(durationMillis = 300),
+                label = "IconSize"
+            )
+            Hourglass(
+                modifier = Modifier
+                    .size(iconHourglassSize)
+                    .padding(top = 16.dp, end = 16.dp)
+                    .align(Alignment.TopEnd)
+                    .clickable {
+                        event(HomeEvent.ShowPeriodHistory(periodId = state.profile.currentPeriodIndex - 1))
+                    }
+            )
+
+            // --- Кнопки внизу комнаты ---
             val isVisible = state.openWindow == OpenWindow.None
-            // 2. Анимируем размер и отступы от базовых значений до 0.dp
-            val iconSize by animateDpAsState(
+            val downIconSize by animateDpAsState(
                 targetValue = if (isVisible) 56.dp else 0.dp,
                 animationSpec = tween(durationMillis = 300),
                 label = "IconSize"
             )
 
-            Hourglass(
-                modifier = Modifier
-                    .size(iconSize)
-                    .padding(top = 16.dp, end = 16.dp)
-                    .align(Alignment.TopEnd)
-            )
             Column(modifier = Modifier.fillMaxSize()) {
                 Spacer(modifier = Modifier.fillMaxHeight(0.59f))
 
@@ -308,12 +314,12 @@ fun PetRoom(modifier: Modifier, event: (HomeEvent) -> Unit, state: HomeState) {
                         modifier = Modifier
                             .padding(top = 8.dp)
                             .align(Alignment.TopStart)
-                            .size(iconSize)
+                            .size(downIconSize)
                     )
                     ShoppingBasket(
                         modifier = Modifier
                             .align(Alignment.TopEnd)
-                            .size(iconSize)
+                            .size(downIconSize)
                     )
                 }
             }

@@ -94,7 +94,8 @@ fun StartPeriodInfoScreen(
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color.White, shape = RoundedCornerShape(16.dp)),
+                    .background(Color.White, shape = RoundedCornerShape(24.dp))
+                    .border(width = 2.dp, Color.DarkGray, shape = RoundedCornerShape(24.dp)),
                 contentPadding = PaddingValues(24.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 horizontalAlignment = Alignment.CenterHorizontally

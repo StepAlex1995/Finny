@@ -23,6 +23,7 @@ import com.stepalex.finny.domain.use_cases.SaveCompletedTaskCountUseCase
 import com.stepalex.finny.domain.use_cases.SavePeriodStartTimeUseCase
 import com.stepalex.finny.domain.use_cases.SaveStartTaskCompletedUseCase
 import com.stepalex.finny.domain.use_cases.period.GetCurrentTaskUseCase
+import com.stepalex.finny.domain.use_cases.period.GetHistoryByPeriodIdUseCase
 import com.stepalex.finny.domain.use_cases.period.StartNewPeriodUseCase
 import com.stepalex.finny.domain.use_cases.period.SubmitTaskAnswerUseCase
 import com.stepalex.finny.domain.use_cases.profile.GetGoalsUseCase
@@ -55,8 +56,8 @@ class HomeViewModel @Inject constructor(
     private val startNewPeriodUseCase: StartNewPeriodUseCase,
     private val submitTaskAnswerUseCase: SubmitTaskAnswerUseCase,
     private val getCurrentTaskUseCase: GetCurrentTaskUseCase,
-
-    ) : ViewModel() {
+    private val getHistoryByPeriodIdUseCase: GetHistoryByPeriodIdUseCase
+) : ViewModel() {
     private val _uiEvent = Channel<HomeUIEvent>()
     val uiEvent = _uiEvent.receiveAsFlow()
 
@@ -357,6 +358,34 @@ class HomeViewModel @Inject constructor(
                     openWindow = OpenWindow.ShowResultTaskAnswer,
                     selectedTaskAnswer = event.taskAnswer
                 )
+            }
+
+            is HomeEvent.ShowPeriodHistory -> {//Просмотреть историю по периодам
+                viewModelScope.launch {
+                    val periodHistory = getHistoryByPeriodIdUseCase(event.periodId).getOrNull()
+                    homeState = homeState.copy(
+                        openWindow = OpenWindow.ShowPeriodHistory,
+                        periodHistory = periodHistory
+                    )
+                }
+            }
+            is HomeEvent.ShowPreviewsPeriodHistory -> {//Просмотреть историю предыдущего
+                viewModelScope.launch {
+                    val periodHistory = getHistoryByPeriodIdUseCase(homeState.periodHistory!!.periodIndex - 1).getOrNull()
+                    homeState = homeState.copy(
+                        openWindow = OpenWindow.ShowPeriodHistory,
+                        periodHistory = periodHistory
+                    )
+                }
+            }
+            is HomeEvent.ShowNextPeriodHistory -> {//Просмотреть историю следующего периода
+                viewModelScope.launch {
+                    val periodHistory = getHistoryByPeriodIdUseCase(homeState.periodHistory!!.periodIndex + 1).getOrNull()
+                    homeState = homeState.copy(
+                        openWindow = OpenWindow.ShowPeriodHistory,
+                        periodHistory = periodHistory
+                    )
+                }
             }
         }
     }

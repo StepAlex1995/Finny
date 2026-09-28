@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.stepalex.finny.presentation.home.HomeEvent
 import kotlinx.coroutines.launch
 
 
@@ -194,6 +195,17 @@ fun GameButtonPreview() {
             onClick = {}
         ){
             OutlineText("ВЫБРАТЬ")
+        }
+
+        GameButton(
+            size = DpSize(60.dp, 60.dp),
+            colorBgr = Color(249, 222, 91),
+            sizeBorder = 2.dp,
+            colorBorder = Color.Black,
+            cornerRadius = 18.dp,
+            onClick = {}
+        ) {
+            OutlineText("<", fontSize = 36.sp)
         }
     }
 }

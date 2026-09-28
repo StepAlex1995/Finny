@@ -1,5 +1,6 @@
 package com.stepalex.finny.presentation.period
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
@@ -24,12 +25,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -62,7 +65,9 @@ fun PeriodResultScreenAnimatable(
     state: HomeState,
 ) {
     AnimatedVisibility(
-        visible = state.openWindow == OpenWindow.ShowPeriodResult && state.periodHistory != null,
+        visible = (state.openWindow == OpenWindow.ShowPeriodResult ||
+                state.openWindow == OpenWindow.ShowPeriodHistory) &&
+                state.periodHistory != null,
         enter = scaleIn(
             animationSpec = tween(durationMillis = 300), initialScale = 0.8f
         ) + fadeIn(animationSpec = tween(durationMillis = 300)),
@@ -72,7 +77,7 @@ fun PeriodResultScreenAnimatable(
     ) {
         if (state.periodHistory != null) {
             PeriodResultScreen(
-                history = state.periodHistory, event = event
+                state = state, event = event
             )
         }
     }
@@ -80,9 +85,10 @@ fun PeriodResultScreenAnimatable(
 
 @Composable
 fun PeriodResultScreen(
-    history: PeriodHistory,
+    state: HomeState,
     event: (HomeEvent) -> Unit,
 ) {
+    val history = state.periodHistory!!
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -97,13 +103,23 @@ fun PeriodResultScreen(
             colors = CardDefaults.cardColors(containerColor = Color.Transparent),
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
         ) {
+            // 1. Создаем и запоминаем состояние списка
+            val listState = rememberLazyListState()
+
+            // 2. Отслеживаем изменение конкретного поля в state (например, id периода или сам список)
+            LaunchedEffect(key1 = state.periodHistory) {
+                // Если история обновилась и она не пустая, плавно или мгновенно скроллим вверх
+                listState.animateScrollToItem(index = 0)
+            }
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color.White, shape = RoundedCornerShape(16.dp)),
+                    .background(Color.White, shape = RoundedCornerShape(24.dp))
+                    .border(width = 2.dp, Color.DarkGray, shape = RoundedCornerShape(24.dp)),
                 contentPadding = PaddingValues(24.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
+                state = listState
             ) {
                 // 1. ШАПКА: НОМЕР ПЕРИОДА И ФИНАНСОВОЕ ЗВАНИЕ
                 item {
@@ -363,16 +379,50 @@ fun PeriodResultScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         // КНОПКА ЗАВЕРШЕНИЯ: ОТПРАВЛЯЕТ СОБЫТИЕ ДЛЯ ПЕРЕХОДА НА ТАЙМЕР / СЛЕДУЮЩИЙ ШАГ
-        Box(modifier = Modifier.padding(bottom = 24.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (state.openWindow == OpenWindow.ShowPeriodHistory && history.periodIndex > 1) {
+                GameButton(
+                    size = DpSize(60.dp, 60.dp),
+                    colorBgr = Color(249, 222, 91),
+                    sizeBorder = 2.dp,
+                    colorBorder = Color.Black,
+                    cornerRadius = 18.dp,
+                    onClick = { event(HomeEvent.ShowPreviewsPeriodHistory) }
+                ) {
+                    OutlineText("<", fontSize = 36.sp)
+                }
+            }else{
+                Spacer(modifier = Modifier.width(60.dp))
+            }
             GameButton(
-                size = DpSize(240.dp, 60.dp),
+                size = DpSize(180.dp, 60.dp),
                 colorBgr = Color(249, 222, 91),
                 sizeBorder = 2.dp,
                 colorBorder = Color.Black,
                 cornerRadius = 18.dp,
                 onClick = { event(HomeEvent.ShowHomeWindow) }
             ) {
-                OutlineText("Далее")
+                OutlineText(if (state.openWindow == OpenWindow.ShowPeriodResult) "Далее" else "Закрыть")
+            }
+            if (state.openWindow == OpenWindow.ShowPeriodHistory &&
+                history.periodIndex < state.profile!!.currentPeriodIndex - 1
+            ) {
+                GameButton(
+                    size = DpSize(60.dp, 60.dp),
+                    colorBgr = Color(249, 222, 91),
+                    sizeBorder = 2.dp,
+                    colorBorder = Color.Black,
+                    cornerRadius = 18.dp,
+                    onClick = { event(HomeEvent.ShowNextPeriodHistory) }
+                ) {
+                    OutlineText(">", fontSize = 36.sp)
+                }
+            }else{
+                Spacer(modifier = Modifier.width(60.dp))
             }
         }
     }
