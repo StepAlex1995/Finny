@@ -1,10 +1,18 @@
 package com.stepalex.finny.presentation.pet_room
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,6 +28,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
@@ -35,6 +44,10 @@ import com.stepalex.finny.presentation.common.CountMoneyOutlineText
 import com.stepalex.finny.presentation.common.FinnyProgressBar
 import com.stepalex.finny.presentation.common.FinnyProgressStyle
 import com.stepalex.finny.presentation.common.FinnyTickStyle
+import com.stepalex.finny.presentation.common.food.Carrot
+import com.stepalex.finny.presentation.common.icons.Gamepad
+import com.stepalex.finny.presentation.common.icons.Hourglass
+import com.stepalex.finny.presentation.common.icons.ShoppingBasket
 import com.stepalex.finny.presentation.common.items.getPetItems
 import com.stepalex.finny.presentation.common.pets.Pet
 import com.stepalex.finny.presentation.common.pets.PetAction
@@ -49,7 +62,6 @@ import com.stepalex.finny.presentation.home.HomeEvent
 import com.stepalex.finny.presentation.home.HomeState
 import com.stepalex.finny.presentation.home.OpenWindow
 import com.stepalex.finny.presentation.home.ShowDialog
-import com.stepalex.finny.presentation.common.food.Carrot
 import com.stepalex.finny.presentation.pet_room_bgr.Money
 import com.stepalex.finny.presentation.pet_room_bgr.MoodIndicator
 import com.stepalex.finny.presentation.pet_room_bgr.MoodSmile
@@ -267,7 +279,46 @@ fun PetRoom(modifier: Modifier, event: (HomeEvent) -> Unit, state: HomeState) {
             ) {
                 TaskAnswersScreenAnimatable(event = event, state = state)
             }
+
+
+            // 1. Создаем триггер для анимации
+            val isVisible = state.openWindow == OpenWindow.None
+            // 2. Анимируем размер и отступы от базовых значений до 0.dp
+            val iconSize by animateDpAsState(
+                targetValue = if (isVisible) 56.dp else 0.dp,
+                animationSpec = tween(durationMillis = 300),
+                label = "IconSize"
+            )
+
+            Hourglass(
+                modifier = Modifier
+                    .size(iconSize)
+                    .padding(top = 16.dp, end = 16.dp)
+                    .align(Alignment.TopEnd)
+            )
+            Column(modifier = Modifier.fillMaxSize()) {
+                Spacer(modifier = Modifier.fillMaxHeight(0.59f))
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                ) {
+                    Gamepad(
+                        modifier = Modifier
+                            .padding(top = 8.dp)
+                            .align(Alignment.TopStart)
+                            .size(iconSize)
+                    )
+                    ShoppingBasket(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .size(iconSize)
+                    )
+                }
+            }
         }
+
     }
 }
 
