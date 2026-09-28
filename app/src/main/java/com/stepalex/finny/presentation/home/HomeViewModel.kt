@@ -22,11 +22,15 @@ import com.stepalex.finny.domain.use_cases.GetPeriodStartTimeUseCase
 import com.stepalex.finny.domain.use_cases.SaveCompletedTaskCountUseCase
 import com.stepalex.finny.domain.use_cases.SavePeriodStartTimeUseCase
 import com.stepalex.finny.domain.use_cases.SaveStartTaskCompletedUseCase
+import com.stepalex.finny.domain.use_cases.period.GetCurrentTaskUseCase
+import com.stepalex.finny.domain.use_cases.period.StartNewPeriodUseCase
+import com.stepalex.finny.domain.use_cases.period.SubmitTaskAnswerUseCase
 import com.stepalex.finny.domain.use_cases.profile.GetGoalsUseCase
 import com.stepalex.finny.domain.use_cases.profile.GetProfileUseCase
 import com.stepalex.finny.domain.use_cases.profile.UpdateProfileUseCase
 import com.stepalex.finny.nvgraph.HomeUIEvent
 import com.stepalex.finny.presentation.common.pets.PetType
+import com.stepalex.finny.presentation.home.PeriodState.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
@@ -48,6 +52,9 @@ class HomeViewModel @Inject constructor(
     private val saveCompletedTaskCountUseCase: SaveCompletedTaskCountUseCase,
     private val saveStartTaskCompletedUseCase: SaveStartTaskCompletedUseCase,
     private val checkStartTaskCompletedUseCase: CheckStartTaskCompletedUseCase,
+    private val startNewPeriodUseCase: StartNewPeriodUseCase,
+    private val submitTaskAnswerUseCase: SubmitTaskAnswerUseCase,
+    private val getCurrentTaskUseCase: GetCurrentTaskUseCase,
 
     ) : ViewModel() {
     private val _uiEvent = Channel<HomeUIEvent>()
@@ -61,7 +68,9 @@ class HomeViewModel @Inject constructor(
             showDialog = ShowDialog.None,
             profile = null,
             goals = emptyList(),
-            selectGoal = null
+            selectGoal = null,
+            selectedTaskAnswer = null,
+            periodHistory = null
         )
     )
 
@@ -99,68 +108,14 @@ class HomeViewModel @Inject constructor(
             // Если 5 задач еще НЕ выполнено, мы просто даем их решать без всяких ограничений по времени
             val isStartTaskDone = checkStartTaskCompletedUseCase()
             if (!isStartTaskDone) {
-                homeState = homeState.copy(periodState = PeriodState.Locked)
+                homeState = homeState.copy(periodState = Locked)
             } else {
-                homeState = homeState.copy(periodState = PeriodState.InProgress(completedCount))
+                homeState = homeState.copy(
+                    periodState = InProgress(completedCount),
+                    currentTask = getCurrentTaskUseCase().getOrNull()
+                )
             }
-            /*
-            // ЕСЛИ ПРИЛОЖЕНИЕ ЗАПУЩЕНО ВПЕРВЫЕ (БАЗА СВЕЖАЯ)
-            if (startTime == 0L) {
-                startNewPeriod(now)
-                return@launch
-            }
-            // ЕСЛИ N ЧАСОВ УЖЕ ПРОШЛИ — сбрасываем всё под НОВЫЙ период
-            if ((now - startTime) >= PERIOD_DURATION_MS) {
-                startNewPeriod(now)
-                return@launch
-            }
-            // МЫ ВНУТРИ ТЕКУЩЕГО ПЕРИОДА (проверяем сохраненный прогресс)
-            val isStartTaskDone = checkStartTaskCompletedUseCase()
-            //val completedCount = getCompletedTasksCountUseCase()
 
-            when {
-                !isStartTaskDone -> {
-                    homeState = homeState.copy(periodState = PeriodState.Locked)
-                }
-
-                completedCount < TASK_PER_PERIOD -> {
-                    homeState =
-                        homeState.copy(periodState = PeriodState.InProgress(completedCount))
-                }
-
-                else -> {
-                    //Всё задачи выполнены - запускаем таймер обратного отсчета
-                    startCountdownTimer(startTime)
-                }
-            }*/
-            /*//Если прошло больше N часов с начала старта периода - сбрасываем все на новый цикл
-            if (startTime == 0L || (now - startTime) >= PERIOD_DURATION_MS) {
-                savePeriodStartTimeUseCase(now)
-                saveCompletedTaskCountUseCase(0)
-                saveStartTaskCompletedUseCase(false)
-                homeState = homeState.copy(periodState = PeriodState.Locked)
-                timerJob?.cancel()
-            } else {
-                //Сейчас текущий период
-                val isStartTaskDone = checkStartTaskCompletedUseCase()
-                val completedCount = getCompletedTasksCountUseCase()
-
-                when {
-                    !isStartTaskDone -> {
-                        homeState = homeState.copy(periodState = PeriodState.Locked)
-                    }
-
-                    completedCount < TASK_PER_PERIOD -> {
-                        homeState =
-                            homeState.copy(periodState = PeriodState.InProgress(completedCount))
-                    }
-
-                    else -> {
-                        //Всё задачи выполнены - запускаем таймер обратного отсчета
-                        startCountdownTimer(startTime)
-                    }
-                }
-            }*/
         }
     }
 
@@ -169,17 +124,16 @@ class HomeViewModel @Inject constructor(
         savePeriodStartTimeUseCase(0L)//Обнуляем таймер //startTimeMs)
         saveCompletedTaskCountUseCase(0)
         saveStartTaskCompletedUseCase(false)
-        homeState = homeState.copy(periodState = PeriodState.Locked)
+        homeState = homeState.copy(periodState = Locked)
         timerJob?.cancel()
     }
 
     fun onEvent(event: HomeEvent) {
-        when (event) {
-            is HomeEvent.OpenQuiz -> {
+        when (event) {/*is HomeEvent.OpenQuiz -> {
                 viewModelScope.launch {
                     _uiEvent.send(HomeUIEvent.OpenQuiz)
                 }
-            }
+            }*/
 
             is HomeEvent.GetProfile -> {
                 viewModelScope.launch {
@@ -326,29 +280,64 @@ class HomeViewModel @Inject constructor(
 
             is HomeEvent.CompleteQuizTask -> {
                 viewModelScope.launch {
+                    // Вызывается ПОСЛЕ КАЖДОГО квиза. Прогресс мгновенно сохраняется в базу!
+                    submitTaskAnswerUseCase(
+                        homeState.currentTask!!, event.taskAnswer
+                    ).onSuccess { updatedProfile ->
+                        homeState = homeState.copy(
+                            profile = updatedProfile.first,
+                            periodHistory = updatedProfile.second
+                        )
+                    }
                     val newCount = getCompletedTasksCountUseCase() + 1
                     saveCompletedTaskCountUseCase(newCount)
+
                     if (newCount >= TASK_PER_PERIOD) {
                         //Выполнили последнюю задачу, запускаем таймер
                         //val startTime = getPeriodStartTimeUseCase()
                         //startCountdownTimer(startTime)
 
-                        // ПОЛЬЗОВАТЕЛЬ ЗАКОНЧИЛ ВСЁ! Засекаем 4 часа отдыха строго от ТЕКУЩЕГО момента
+                        // ПОЛЬЗОВАТЕЛЬ ЗАКОНЧИЛ ВСЁ! Засекаем время строго от ТЕКУЩЕГО момента
                         val finishTime = System.currentTimeMillis()
                         savePeriodStartTimeUseCase(finishTime) // Перезаписываем точку отсчета!
                         startCountdownTimer(finishTime)
-
+                        //Закрывать окно
+                        //homeState = homeState.copy(openWindow = OpenWindow.None)
+                        //Показывать окно с результатами периода
+                        homeState = homeState.copy(openWindow = OpenWindow.ShowPeriodResult)
                     } else {
-                        homeState = homeState.copy(periodState = PeriodState.InProgress(newCount))
+                        homeState = homeState.copy(
+                            periodState = InProgress(newCount),
+                            currentTask = getCurrentTaskUseCase().getOrNull(),
+                            openWindow = OpenWindow.None
+                        )
+                        //homeState = homeState.copy(periodState = InProgress(newCount))
                     }
                 }
             }
 
-            is HomeEvent.CompleteStartTask -> {
+            is HomeEvent.CompleteStartTask -> {//Выполнил стартовую работу
                 viewModelScope.launch {
+                    //запоминание в преференс что начался период
                     saveStartTaskCompletedUseCase(true)
-                    homeState =
-                        homeState.copy(periodState = PeriodState.InProgress(completedCount = 0))
+                    homeState = homeState.copy(periodState = InProgress(completedCount = 0))
+
+                    // Запускает период, применяет эффекты и генерирует задачи ОДНОВРЕМЕННО
+                    startNewPeriodUseCase().onSuccess { periodInfo ->  //(profile, effects) ->
+                        homeState = homeState.copy(
+                            profile = periodInfo.profile,
+                            appliedEffects = periodInfo.scheduledEffects,
+                            openWindow = OpenWindow.ShowStartPeriodInfo,
+                            //showEffectsDialog = periodInfo.scheduledEffects.isNotEmpty(),
+                            currentTask = periodInfo.currentTask
+                        )
+                        Log.i("TEST", "CURRENT TASKS: ${periodInfo.profile.currentPeriodTaskIds}")
+                        Log.i(
+                            "TEST",
+                            "CURRENT TASK number: ${periodInfo.profile.currentPeriodChoices.size}"
+                        )
+                        Log.i("TEST", "CURRENT TASK current : ${periodInfo.currentTask}")
+                    }
                 }
             }
 
@@ -357,6 +346,17 @@ class HomeViewModel @Inject constructor(
                     timerJob?.cancel()
                     startNewPeriod()
                 }
+            }
+
+            HomeEvent.ShowTask -> {
+                homeState = homeState.copy(openWindow = OpenWindow.ShowTask)
+            }
+
+            is HomeEvent.SelectTaskAnswer -> {//выбрал ответ на задание
+                homeState = homeState.copy(
+                    openWindow = OpenWindow.ShowResultTaskAnswer,
+                    selectedTaskAnswer = event.taskAnswer
+                )
             }
         }
     }
@@ -385,7 +385,7 @@ class HomeViewModel @Inject constructor(
                     val timeString = String.format("%02d:%02d:%02d", hours, minutes, seconds)
 
                     homeState =
-                        homeState.copy(periodState = PeriodState.WaitingForNextPeriod(timeString))
+                        homeState.copy(periodState = WaitingForNextPeriod(timeString))
                 }
                 delay(1000.milliseconds)
             }
@@ -394,7 +394,7 @@ class HomeViewModel @Inject constructor(
 
     companion object {
         const val PERIOD_DURATION_MS =
-            /*4 * 60 * */20 * 1000L // 4 часа в мс todo времененное решение, потом читать с конфигов
+            24 * 60 * 60 * 1000L // 4 часа в мс todo времененное решение, потом читать с конфигов
 
         const val TASK_PER_PERIOD =
             5// задач за период todo тоже сделать в дальнейшем чтение из конфигов

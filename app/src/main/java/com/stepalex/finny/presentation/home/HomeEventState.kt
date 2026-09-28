@@ -2,11 +2,15 @@ package com.stepalex.finny.presentation.home
 
 import com.stepalex.finny.domain.model.Goal
 import com.stepalex.finny.domain.model.ItemInventory
+import com.stepalex.finny.domain.model.PeriodHistory
 import com.stepalex.finny.domain.model.PetStyle
 import com.stepalex.finny.domain.model.Profile
+import com.stepalex.finny.domain.model.ScheduledEffect
+import com.stepalex.finny.domain.model.Task
+import com.stepalex.finny.domain.model.TaskAnswer
 
 sealed class HomeEvent {
-    data class OpenQuiz(val taskId: Int) : HomeEvent()
+    //data class OpenQuiz(val taskId: Int) : HomeEvent()
     object ShowHomeWindow : HomeEvent()
     data class OnGoalClick(val goal: Goal) : HomeEvent()
     data class SelectGoal(val goal: Goal) : HomeEvent()
@@ -22,8 +26,14 @@ sealed class HomeEvent {
     //выполнена стартовая задача(работа)
     data class CompleteStartTask(val todoPrams: Int) : HomeEvent()
 
-    //Пройден очередной квиз
-    data class CompleteQuizTask(val todoParams: Int) : HomeEvent()
+    //Показать очередную задачу
+    data object ShowTask : HomeEvent()
+
+    //Выбрать вариант ответа на событие
+    data class SelectTaskAnswer(val taskAnswer: TaskAnswer) : HomeEvent()
+
+    //Ответить по очередной задаче
+    data class CompleteQuizTask(val taskAnswer: TaskAnswer) : HomeEvent()
 
     //Пропуск ожидания таймера для тестирования
     data object SkipTimer : HomeEvent()
@@ -36,18 +46,27 @@ data class HomeState(
     val goals: List<Goal>,
     val selectGoal: Goal?,
     val periodState: PeriodState = PeriodState.Locked,
+
+    // Отображение итогов прошлого периода:
+    val appliedEffects: List<ScheduledEffect> = emptyList(),
+    //val showEffectsDialog: Boolean = false,             //Показать результаты за прошедший период
+    val currentTask: Task? = null,
+    val selectedTaskAnswer: TaskAnswer?,
+    val periodHistory: PeriodHistory? = null
 )
 
 enum class OpenWindow {
-    None,
-    Goals,
-    CreatePet
+    None,   //Домашняя страница
+    Goals,  //Просмотр и выбор цели
+    CreatePet,  //Создание питомца
+    ShowTask,   //Показать событие
+    ShowResultTaskAnswer,    //Показать результат выбора ответа по событию
+    ShowStartPeriodInfo,    //Показать результаты за прошедший период
+    ShowPeriodResult,    //Показать результаты по текущему периоду
 }
 
 enum class ShowDialog {
-    None,
-    SelectGoal,
-    SelectPet
+    None, SelectGoal, SelectPet
 }
 
 // Состояние периода

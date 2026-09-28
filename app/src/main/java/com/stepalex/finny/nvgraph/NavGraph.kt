@@ -10,7 +10,6 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import com.stepalex.finny.presentation.home.HomeScreen
 import com.stepalex.finny.presentation.home.HomeViewModel
-import com.stepalex.finny.presentation.quiz.QuizScreen
 import com.stepalex.finny.presentation.splash.SplashScreen
 import com.stepalex.finny.presentation.splash.SplashViewModel
 
@@ -38,9 +37,9 @@ fun NavGraph(startDestination: String) {
                 val viewModel: HomeViewModel = hiltViewModel()
                 LaunchedEffect(key1 = true) {
                     viewModel.uiEvent.collect { event ->
-                        when (event) {
+                       /* when (event) {
                             HomeUIEvent.OpenQuiz -> navController.navigate(Route.QuizScreen.route)
-                        }
+                        }*/
                     }
                 }
                 // Подключаем состояние правильно (как чинили раньше)
@@ -48,9 +47,9 @@ fun NavGraph(startDestination: String) {
                 HomeScreen(event = viewModel::onEvent, state = viewModel.homeState)
             }
 
-            dialog(route = "quizScreen") {
+           /* dialog(route = "quizScreen") {
                 QuizScreen(onDismiss = { navController.popBackStack() })
-            }
+            }*/
         }
 
 

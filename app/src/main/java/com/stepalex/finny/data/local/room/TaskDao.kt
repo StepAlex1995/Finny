@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
+import com.stepalex.finny.data.entity.TaskEntity
 
 @Dao
 interface TaskDao {
@@ -21,6 +22,9 @@ interface TaskDao {
     // Только задачи конкретной версии
     @Query("SELECT * FROM tasks WHERE version = :version")
     suspend fun getTasksByVersion(version: Int): List<TaskEntity>
+
+    @Query("SELECT * FROM tasks WHERE id = :id")
+    suspend fun getTasksById(id: Long): List<TaskEntity>
 
     @Transaction
     suspend fun refreshTasks(tasks: List<TaskEntity>) {

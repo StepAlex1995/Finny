@@ -160,10 +160,11 @@ fun GoalsScreen(
                     sizeBorder = 2.dp,
                     colorBorder = Color.Black,
                     cornerRadius = 12.dp,
-                    text = "НАЗАД",
-                    iconColor = Color.Black
+                    //text = "НАЗАД",
+                    iconColor = Color.Black,
+                    onClick = {onClose()}
                 ) {
-                    onClose()
+                    OutlineText("НАЗАД")
                 }
             }
         }

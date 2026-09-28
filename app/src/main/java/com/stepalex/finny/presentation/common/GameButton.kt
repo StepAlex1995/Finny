@@ -11,10 +11,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -26,14 +28,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 
 
@@ -45,11 +50,11 @@ fun GameButton(
     sizeBorder: Dp = 0.dp,
     cornerRadius: Dp = 0.dp,
     iconId: Int? = null,
-    text: String? = null,
     iconColor: Color? = null,
     contentDescription: String? = null,
     typeGlare: TypeGlare = TypeGlare.TWO,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    content: @Composable () -> Unit = {}
 ) {
     val scale = remember { Animatable(1f) }
     val animationScope = rememberCoroutineScope()
@@ -134,9 +139,7 @@ fun GameButton(
                 modifier = Modifier.size(size.width / 2 - 2.dp, size.height / 2 - 2.dp)
             )
         }
-        text?.let {
-            OutlineText(it)
-        }
+        content()
     }
 }
 
@@ -186,8 +189,11 @@ fun GameButtonPreview() {
             sizeBorder = 2.dp,
             colorBorder = Color.Black,
             cornerRadius = 12.dp,
-            text = "ВЫБРАТЬ",
-            iconColor = Color.Black
-        ) { }
+            //text = "ВЫБРАТЬ",
+            iconColor = Color.Black,
+            onClick = {}
+        ){
+            OutlineText("ВЫБРАТЬ")
+        }
     }
 }

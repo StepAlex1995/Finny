@@ -623,7 +623,9 @@ fun CreatePetScreenPreview() {
             showDialog = ShowDialog.None,
             profile = null,
             goals = emptyList(),
-            selectGoal = null
+            selectGoal = null,
+            selectedTaskAnswer = null,
+            periodHistory = null
         )
     ) { }
 }

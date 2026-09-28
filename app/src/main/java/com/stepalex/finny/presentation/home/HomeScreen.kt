@@ -1,5 +1,6 @@
 package com.stepalex.finny.presentation.home
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,14 +12,29 @@ import com.stepalex.finny.presentation.create_pet.ConfirmSelectPetDialogAnimatab
 import com.stepalex.finny.presentation.create_pet.CreatePetScreenAnimatable
 import com.stepalex.finny.presentation.goals.GameDialogAnimatable
 import com.stepalex.finny.presentation.goals.GoalScreenAnimatable
+import com.stepalex.finny.presentation.period.PeriodResultScreenAnimatable
+import com.stepalex.finny.presentation.period.StartPeriodInfoScreenAnimatable
 import com.stepalex.finny.presentation.pet_room.PetRoom
 import com.stepalex.finny.presentation.pet_room_bgr.PetRoomBgr
+import com.stepalex.finny.presentation.pet_room_bgr.PetRoomColor
+import com.stepalex.finny.presentation.task.ResultTaskScreenAnimatable
+import com.stepalex.finny.presentation.task.TaskQuestionScreenAnimatable
 
 @Composable
 fun HomeScreen(event: ((HomeEvent) -> Unit), state: HomeState) {
-    Box(modifier = Modifier.fillMaxSize()) {
-        PetRoomBgr(modifier = Modifier.fillMaxWidth().fillMaxHeight(0.85f))
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .background(PetRoomColor().floorColor)) {
+        PetRoomBgr(modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight(0.85f))
         PetRoom(modifier = Modifier.fillMaxSize(), event, state)
+
+        TaskQuestionScreenAnimatable(event, state)
+        ResultTaskScreenAnimatable(event, state)
+        StartPeriodInfoScreenAnimatable(event,state)
+        PeriodResultScreenAnimatable(event,state)
+
         GoalScreenAnimatable(event, state)
         GameDialogAnimatable(event, state)
         CreatePetScreenAnimatable(event, state)
@@ -42,7 +58,8 @@ fun HomeScreenPreview() {
                 showDialog = ShowDialog.None,
                 profile = null,
                 goals = emptyList(),
-                selectGoal = null
+                selectGoal = null,
+                selectedTaskAnswer = null
             ),
         )
     }

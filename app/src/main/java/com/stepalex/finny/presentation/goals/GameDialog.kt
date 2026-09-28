@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.stepalex.finny.presentation.common.GameButton
+import com.stepalex.finny.presentation.common.OutlineText
 import com.stepalex.finny.presentation.common.TypeGlare
 import com.stepalex.finny.presentation.home.HomeEvent
 import com.stepalex.finny.presentation.home.HomeState
@@ -89,10 +90,12 @@ fun GameDialogAnimatable(event: ((HomeEvent) -> Unit), state: HomeState) {
                             colorBorder = Color.Black,
                             sizeBorder = 2.dp,
                             cornerRadius = 14.dp,
-                            text = "Отмена",
+                            //  text = "Отмена",
                             typeGlare = TypeGlare.NONE,
                             onClick = { event(HomeEvent.ClearSelectGoal) }
-                        )
+                        ) {
+                            OutlineText("Отмена")
+                        }
                     },
                     positiveBtn = {
                         GameButton(
@@ -101,10 +104,12 @@ fun GameDialogAnimatable(event: ((HomeEvent) -> Unit), state: HomeState) {
                             colorBorder = Color.Black,
                             sizeBorder = 3.dp,
                             cornerRadius = 14.dp,
-                            text = "Начать",
+                            //text = "Начать",
                             typeGlare = TypeGlare.TWO,
                             onClick = { event(HomeEvent.SelectGoal(goal = state.selectGoal!!)) }
-                        )
+                        ) {
+                            OutlineText("Начать")
+                        }
                     }
                 )
             }
@@ -201,10 +206,12 @@ fun GameDialogPreview() {
                     colorBorder = Color.Black,
                     sizeBorder = 2.dp,
                     cornerRadius = 14.dp,
-                    text = "Отмена",
+                    //text = "Отмена",
                     typeGlare = TypeGlare.NONE, // Для нейтральной кнопки можно отключить блик
                     onClick = { /* закрыть диалог */ }
-                )
+                ){
+                    OutlineText("Отмена")
+                }
             },
             positiveBtn = {
                 GameButton(
@@ -213,10 +220,12 @@ fun GameDialogPreview() {
                     colorBorder = Color.Black,
                     sizeBorder = 3.dp, // Жирный контур для акцента
                     cornerRadius = 14.dp,
-                    text = "Открыть",
+                    //text = "Открыть",
                     typeGlare = TypeGlare.TWO, // Сочный двойной блик
                     onClick = { /* логика списания монет */ }
-                )
+                ){
+                    OutlineText("Открыть")
+                }
             }
         )
     }

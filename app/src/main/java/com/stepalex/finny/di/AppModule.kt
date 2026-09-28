@@ -4,7 +4,10 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.room.Room
 import com.stepalex.finny.data.local.room.AppDatabase
+import com.stepalex.finny.data.local.room.PeriodHistoryDao
+import com.stepalex.finny.data.local.room.ScheduledEffectDao
 import com.stepalex.finny.data.local.room.TaskDao
+import com.stepalex.finny.data.repository.PeriodRepositoryImpl
 import com.stepalex.finny.data.repository.ProfileRepositoryImpl
 import com.stepalex.finny.data.repository.TaskRepositoryImpl
 import com.stepalex.finny.data.repository.TaskSettingRepositoryImpl
@@ -16,6 +19,7 @@ import dagger.hilt.components.SingletonComponent
 import kotlinx.serialization.json.Json
 import javax.inject.Singleton
 import com.stepalex.finny.data.source.TaskAssetDataSource
+import com.stepalex.finny.domain.repository.PeriodRepository
 import com.stepalex.finny.domain.repository.ProfileRepository
 import com.stepalex.finny.domain.repository.TaskRepository
 import com.stepalex.finny.domain.repository.TaskSettingRepository
@@ -28,6 +32,10 @@ import com.stepalex.finny.domain.use_cases.SaveCompletedTaskCountUseCase
 import com.stepalex.finny.domain.use_cases.SavePeriodStartTimeUseCase
 import com.stepalex.finny.domain.use_cases.SaveStartTaskCompletedUseCase
 import com.stepalex.finny.domain.use_cases.SyncTasksUseCase
+import com.stepalex.finny.domain.use_cases.period.GetCurrentTaskUseCase
+import com.stepalex.finny.domain.use_cases.period.GetDetailedPeriodHistoryUseCase
+import com.stepalex.finny.domain.use_cases.period.StartNewPeriodUseCase
+import com.stepalex.finny.domain.use_cases.period.SubmitTaskAnswerUseCase
 import com.stepalex.finny.domain.use_cases.profile.CheckGoalsUseCase
 import com.stepalex.finny.domain.use_cases.profile.GetGoalsUseCase
 import com.stepalex.finny.domain.use_cases.profile.GetProfileUseCase
@@ -66,6 +74,18 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun providePeriodHistoryDao(database: AppDatabase): PeriodHistoryDao {
+        return database.periodHistoryDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideScheduledEffectDao(database: AppDatabase): ScheduledEffectDao {
+        return database.scheduledEffectDao()
+    }
+
+    @Provides
+    @Singleton
     fun provideTaskAssetDataSource(
         @ApplicationContext context: Context, json: Json
     ): TaskAssetDataSource {
@@ -92,6 +112,15 @@ object AppModule {
         json: Json, sharedPreferences: SharedPreferences
     ): ProfileRepository {
         return ProfileRepositoryImpl(json, sharedPreferences)
+    }
+
+    @Provides
+    @Singleton
+    fun providePeriodRepository(
+        historyDao: PeriodHistoryDao,
+        effectDao: ScheduledEffectDao
+    ): PeriodRepository {
+        return PeriodRepositoryImpl(historyDao, effectDao)
     }
 
     // --- USE CASES ---
@@ -181,4 +210,57 @@ object AppModule {
     fun provideSaveStartTaskCompletedUseCase(taskSettingRepository: TaskSettingRepository): SaveStartTaskCompletedUseCase {
         return SaveStartTaskCompletedUseCase(taskSettingRepository)
     }
+
+    @Provides
+    @Singleton
+    fun provideGetDetailedPeriodHistoryUseCase(
+        periodRepository: PeriodRepository,
+        taskRepository: TaskRepository
+    ): GetDetailedPeriodHistoryUseCase {
+        return GetDetailedPeriodHistoryUseCase(
+            periodRepository = periodRepository,
+            taskRepository = taskRepository
+        )
+    }
+
+    @Provides
+    @Singleton
+    fun provideStartNewPeriodUseCase(
+        profileRepository: ProfileRepository,
+        periodRepository: PeriodRepository,
+        taskRepository: TaskRepository
+    ): StartNewPeriodUseCase {
+        return StartNewPeriodUseCase(
+            profileRepository = profileRepository,
+            periodRepository = periodRepository,
+            taskRepository = taskRepository
+        )
+    }
+
+    @Provides
+    @Singleton
+    fun provideSubmitTaskAnswerUseCase(
+        profileRepository: ProfileRepository,
+        periodRepository: PeriodRepository,
+        taskRepository: TaskRepository
+    ): SubmitTaskAnswerUseCase {
+        return SubmitTaskAnswerUseCase(
+            profileRepository = profileRepository,
+            periodRepository = periodRepository,
+            taskRepository = taskRepository
+        )
+    }
+
+    @Provides
+    @Singleton
+    fun provideGetCurrentTaskUseCase(
+        profileRepository: ProfileRepository,
+        taskRepository: TaskRepository,
+    ): GetCurrentTaskUseCase {
+        return GetCurrentTaskUseCase(
+            profileRepository = profileRepository,
+            taskRepository = taskRepository,
+        )
+    }
+
 }

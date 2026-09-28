@@ -55,6 +55,7 @@ import com.stepalex.finny.presentation.pet_room_bgr.MoodIndicator
 import com.stepalex.finny.presentation.pet_room_bgr.MoodSmile
 import com.stepalex.finny.presentation.pet_room_bgr.PetRoomBgr
 import com.stepalex.finny.presentation.pet_room_bgr.Start
+import com.stepalex.finny.presentation.task.TaskAnswersScreenAnimatable
 import com.stepalex.finny.utils.Fonts
 
 @Composable
@@ -230,16 +231,17 @@ fun PetRoom(modifier: Modifier, event: (HomeEvent) -> Unit, state: HomeState) {
                         // = newMode
                     }
                 })
+
+
             // НИЖНЯЯ ПАНЕЛЬ
-            BottomPetRoomPanel(
-                profile = profile,
-                periodState = state.periodState,
+            BottomPetRoomPanelAnimatable(
+                state = state,
+                event = event,
                 modifier = Modifier
                     .fillMaxWidth()
                     .align(alignment = Alignment.BottomCenter),
                 onFoodClick = { selectedFood ->
                     // Здесь можно отправить ивент на кормление, например:
-                    // event(HomeEvent.FeedPet(selectedFood.typeFood))
                 },
                 onItemClick = { selectedItem ->
                     // Здесь отправляем ивент на смену одежды:
@@ -253,9 +255,18 @@ fun PetRoom(modifier: Modifier, event: (HomeEvent) -> Unit, state: HomeState) {
                     event(HomeEvent.CompleteStartTask(1))
                 },
                 onQuizClick = {
-                    event(HomeEvent.CompleteQuizTask(1))
+                    event(HomeEvent.ShowTask)
                 },
-                onSkipTimer = { event(HomeEvent.SkipTimer) })
+                onSkipTimer = { event(HomeEvent.SkipTimer) }
+            )
+            // ОТВЕТЫ ПО КВИЗУ
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(alignment = Alignment.BottomCenter)
+            ) {
+                TaskAnswersScreenAnimatable(event = event, state = state)
+            }
         }
     }
 }
@@ -297,7 +308,7 @@ fun PetRoomBgrPreview() {
                     petStyle = PetStyle(
                         petType = PetType.BUNNY, petColor = PetColorType.White
                     )
-                ), goals = emptyList(), selectGoal = null
+                ), goals = emptyList(), selectGoal = null, selectedTaskAnswer = null
             )
         )
     }

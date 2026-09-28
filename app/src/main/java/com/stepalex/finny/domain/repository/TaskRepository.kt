@@ -5,6 +5,7 @@ import com.stepalex.finny.domain.model.Task
 
 interface TaskRepository {
     suspend fun getAllTasks(): Result<List<Task>>
+    suspend fun getTaskById(id:Long): Result<Task?>
     suspend fun getTaskByVersion(version: Int): Result<List<Task>>
     suspend fun saveTasks(tasks: List<TaskDto>,version: Int): Result<Unit>
 }

@@ -1,12 +1,15 @@
 package com.stepalex.finny.presentation.pet_room
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -14,12 +17,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.stepalex.finny.domain.model.FoodInventory
 import com.stepalex.finny.domain.model.ItemInventory
-import com.stepalex.finny.domain.model.Profile
+import com.stepalex.finny.domain.model.Task
 import com.stepalex.finny.domain.model.TypeFood
 import com.stepalex.finny.domain.model.TypeItem
 import com.stepalex.finny.presentation.common.food.Apple
@@ -35,6 +37,9 @@ import com.stepalex.finny.presentation.common.food.Carrot
 import com.stepalex.finny.presentation.common.food.Cherry
 import com.stepalex.finny.presentation.common.food.Grapes
 import com.stepalex.finny.presentation.common.food.Pear
+import com.stepalex.finny.presentation.home.HomeEvent
+import com.stepalex.finny.presentation.home.HomeState
+import com.stepalex.finny.presentation.home.OpenWindow
 import com.stepalex.finny.presentation.home.PeriodState
 import com.stepalex.finny.utils.Fonts
 
@@ -43,11 +48,10 @@ enum class PetRoomTab(val title: String) {
     Events("События"), Food("Еда"), Items("Предметы")
 }
 
-
 @Composable
-fun BottomPetRoomPanel(
-    profile: Profile,
-    periodState: PeriodState,
+fun BottomPetRoomPanelAnimatable(
+    state: HomeState,
+    event: (HomeEvent) -> Unit,
     modifier: Modifier = Modifier,
     onFoodClick: (FoodInventory) -> Unit,
     onItemClick: (ItemInventory) -> Unit,
@@ -55,7 +59,50 @@ fun BottomPetRoomPanel(
     onQuizClick: () -> Unit,
     onSkipTimer: () -> Unit
 ) {
-    var selectedTab by remember { mutableStateOf(PetRoomTab.Food) }
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.BottomCenter
+    ) {
+        AnimatedVisibility(
+            visible = state.openWindow == OpenWindow.None,
+            // Анимация ПОЯВЛЕНИЯ: выезжает СНИЗУ вверх + плавное проявление
+            enter = slideInVertically(
+                animationSpec = tween(durationMillis = 300),
+                initialOffsetY = { fullHeight -> fullHeight } // Начинает движение из-за нижней границы экрана
+            ) + fadeIn(animationSpec = tween(durationMillis = 300)),
+
+            // Анимация ИСЧЕЗНОВЕНИЯ: уезжает ВНИЗ + плавное затухание
+            exit = slideOutVertically(
+                animationSpec = tween(durationMillis = 250),
+                targetOffsetY = { fullHeight -> fullHeight } // Уходит обратно за нижнюю границу экрана
+            ) + fadeOut(animationSpec = tween(durationMillis = 250))
+        ) {
+            BottomPetRoomPanel(
+                state = state,
+                event = event,
+                modifier = modifier,
+                onFoodClick = onFoodClick,
+                onItemClick = onItemClick,
+                onStartTaskClick = onStartTaskClick,
+                onQuizClick = onQuizClick,
+                onSkipTimer = onSkipTimer,
+            )
+        }
+    }
+}
+
+@Composable
+fun BottomPetRoomPanel(
+    state: HomeState,
+    event: (HomeEvent) -> Unit,
+    modifier: Modifier = Modifier,
+    onFoodClick: (FoodInventory) -> Unit,
+    onItemClick: (ItemInventory) -> Unit,
+    onStartTaskClick: () -> Unit,
+    onQuizClick: () -> Unit,
+    onSkipTimer: () -> Unit
+) {
+    var selectedTab by remember { mutableStateOf(PetRoomTab.Events) }
 
     Column(
         modifier = modifier.fillMaxWidth()
@@ -67,7 +114,7 @@ fun BottomPetRoomPanel(
                 .padding(horizontal = 8.dp),
             horizontalArrangement = Arrangement.Start
         ) {
-            PetRoomTab.values().forEach { tab ->
+            PetRoomTab.entries.forEach { tab ->
                 val isSelected = selectedTab == tab
 
                 // Кастомная вкладка со скруглением верхних углов (как на скрине)
@@ -101,9 +148,9 @@ fun BottomPetRoomPanel(
         ) {
             when (selectedTab) {
                 PetRoomTab.Food -> {
-                    // Один ряд из 4-х элементов для Еды
+                    // Два ряда по 3 элемента для Еды
                     FixedTwoRowItemsGrid(
-                        items = profile.foodInventory, itemContent = { foodItem ->
+                        items = state.profile!!.foodInventory, itemContent = { foodItem ->
                             FoodCard(foodItem = foodItem, onClick = { onFoodClick(foodItem) })
                         })
                 }
@@ -111,7 +158,7 @@ fun BottomPetRoomPanel(
                 PetRoomTab.Items -> {
                     // Два ряда по 3 элемента для Предметов (одежды)
                     FixedTwoRowItemsGrid(
-                        items = profile.itemInventory, itemContent = { itemInventory ->
+                        items = state.profile!!.itemInventory, itemContent = { itemInventory ->
                             ItemCard(
                                 itemInventory = itemInventory,
                                 onClick = { onItemClick(itemInventory) })
@@ -123,88 +170,17 @@ fun BottomPetRoomPanel(
                         modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
                     ) {
                         EventsPanel(
-                            periodState = periodState,
+                            state = state,
                             onStartTaskClick = onStartTaskClick,
-                            onQuizClick = onQuizClick,
+                            onTaskClick = onQuizClick,
                             onSkipTimer = onSkipTimer
-                        )/*Text(
-                            "Игрушек пока нет",
-                            color = Color.Gray,
-                            fontFamily = Fonts.RegularTextFontFamily
-                        )*/
+                        )
                     }
                 }
             }
         }
     }
 
-}
-
-@Composable
-fun EventsPanel(
-    periodState: PeriodState,
-    onStartTaskClick: () -> Unit,
-    onQuizClick: () -> Unit,
-    onSkipTimer: () -> Unit
-) {
-    Box(
-        modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
-    ) {
-        when (periodState) {
-            is PeriodState.Locked -> {
-                // Шаг 1: Доступна только обязательная задача (Работа)
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Новый период начался!", style = MaterialTheme.typography.headlineSmall)
-                    Text("Выполните вводное задание, чтобы открыть доступ к квизам.")
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Button(onClick = onStartTaskClick) {
-                        Text("Выполнить стартовое задание")
-                    }
-                }
-            }
-
-            is PeriodState.InProgress -> {
-                // Шаг 2: Доступны квизы (показываем счетчик 0..4 из 5)
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Доступны задания периода", style = MaterialTheme.typography.headlineSmall)
-                    Text(
-                        "Выполнено задач: ${periodState.completedCount} / 5",
-                        fontWeight = FontWeight.Bold
-                    )
-                    Spacer(modifier = Modifier.height(24.dp))
-                    Button(onClick = onQuizClick) {
-                        Text("Пройти квиз")
-                    }
-                }
-            }
-
-            is PeriodState.WaitingForNextPeriod -> {
-                // Шаг 3: Все 5 решено, тикает таймер
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Все задачи выполнены!", style = MaterialTheme.typography.headlineSmall)
-                    Text("Следующий период откроется через:")
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Text(
-                        text = periodState.remainingTime,
-                        style = MaterialTheme.typography.displayMedium.copy(
-                            fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary
-                        )
-                    )
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    // КНОПКА МГНОВЕННОГО СБРОСА ТАЙМЕРА
-                    Button(
-                        onClick = onSkipTimer,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.error // Сделаем её приметной
-                        )
-                    ) {
-                        Text("Сбросить время (Пропустить)")
-                    }
-                }
-            }
-        }
-    }
 }
 
 
@@ -377,13 +353,7 @@ fun ItemCard(itemInventory: ItemInventory, onClick: () -> Unit) {
                     text = itemInventory.typeItem.text,
                     fontSize = 11.sp,
                     fontFamily = Fonts.RegularTextFontFamily
-                )/*Text(
-                text = itemInventory.itemColor.name,
-                fontSize = 9.sp,
-                color = Color.Gray,
-                fontFamily = Fonts.RegularTextFontFamily
-            )*/
-                //Spacer(modifier = Modifier.height(8.dp))
+                )
                 if (!itemInventory.isAvailable) {
                     Text(text = "🔒", fontSize = 10.sp, modifier = Modifier.padding(start = 4.dp))
                 }

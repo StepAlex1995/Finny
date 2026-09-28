@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.stepalex.finny.presentation.common.GameButton
+import com.stepalex.finny.presentation.common.OutlineText
 import com.stepalex.finny.presentation.common.TypeGlare
 import com.stepalex.finny.presentation.home.HomeEvent
 import com.stepalex.finny.presentation.home.HomeState
@@ -90,10 +91,12 @@ fun ConfirmSelectPetDialogAnimatable(event: ((HomeEvent) -> Unit), state: HomeSt
                             colorBorder = Color.Black,
                             sizeBorder = 2.dp,
                             cornerRadius = 14.dp,
-                            text = "Изменить питомца",
+                            //text = "Изменить питомца",
                             typeGlare = TypeGlare.NONE,
                             onClick = { event(HomeEvent.HideDialogSelectPet) }
-                        )
+                        ){
+                            OutlineText("Изменить питомца")
+                        }
                     },
                     positiveBtn = {
                         GameButton(
@@ -102,10 +105,12 @@ fun ConfirmSelectPetDialogAnimatable(event: ((HomeEvent) -> Unit), state: HomeSt
                             colorBorder = Color.Black,
                             sizeBorder = 3.dp,
                             cornerRadius = 14.dp,
-                            text = "Готов!",
+                            //text = "Готов!",
                             typeGlare = TypeGlare.TWO,
                             onClick = { event(HomeEvent.SaveProfile) }
-                        )
+                        ){
+                            OutlineText("Готов!")
+                        }
                     }
                 )
             }
@@ -202,10 +207,12 @@ fun ConfirmSelectPetDialogPreview() {
                     colorBorder = Color.Black,
                     sizeBorder = 2.dp,
                     cornerRadius = 14.dp,
-                    text = "Изменить питомца",
+                    //text = "Изменить питомца",
                     typeGlare = TypeGlare.NONE, // Для нейтральной кнопки можно отключить блик
                     onClick = { /* закрыть диалог */ }
-                )
+                ){
+                    OutlineText("Изменить питомца")
+                }
             },
             positiveBtn = {
                 GameButton(
@@ -214,10 +221,12 @@ fun ConfirmSelectPetDialogPreview() {
                     colorBorder = Color.Black,
                     sizeBorder = 3.dp, // Жирный контур для акцента
                     cornerRadius = 14.dp,
-                    text = "Готов!",
+                    //text = "Готов!",
                     typeGlare = TypeGlare.TWO, // Сочный двойной блик
                     onClick = { /* логика списания монет */ }
-                )
+                ){
+                    OutlineText("Готов!")
+                }
             }
         )
     }

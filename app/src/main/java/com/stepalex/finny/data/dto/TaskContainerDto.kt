@@ -15,6 +15,7 @@ data class TaskContainerDto(
 
 @Serializable
 data class TaskDto(
+    val id: Long = 0,
     val title: String,
     val description: String,
     val help: String? = null,
@@ -25,6 +26,7 @@ data class TaskDto(
     val frequency: Int = 1
 ) {
     fun toDomain() = Task(
+        id = id,
         title = title,
         description = description,
         help = help,
@@ -40,22 +42,23 @@ data class TaskDto(
 data class TaskAnswerDto(
     val text: String,
     val description: String,
-    val taskResult: TaskResultDto,
+    val taskResult: List<TaskResultDto>,
     val isPrefer: Boolean = false
 ) {
     fun toDomain() = TaskAnswer(
         text = text,
         description = description,
-        taskResult = taskResult.toDomain(),
+        taskResult = taskResult.map { it.toDomain() },
         isPrefer = isPrefer
     )
 }
 
 @Serializable
 data class TaskResultDto(
+    val period: Int = 0,
     val gold: Int = 0,
     val food: Int = 0,
-    val mood: Int =0
+    val mood: Int = 0
 ) {
-    fun toDomain() = TaskResult(gold = gold, food = food, mood = mood)
+    fun toDomain() = TaskResult(period = period, gold = gold, food = food, mood = mood)
 }

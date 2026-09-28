@@ -5,6 +5,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Profile(
+    val currentPeriodIndex: Int = 1,
     val currentGoal: Goal,
     val countMoney: Int,
     val countFood: Int,
@@ -12,7 +13,11 @@ data class Profile(
     val isSleep: Boolean,
     val foodInventory: List<FoodInventory>,
     val itemInventory: List<ItemInventory>,
-    val petStyle: PetStyle
+    val petStyle: PetStyle,
+    // Поля для сохранения состояния раунда:
+    val currentPeriodTaskIds: List<Long> = emptyList(), // ID 5 задач, сгенерированных на этот период
+    val currentPeriodChoices: List<HistoryChoice> = emptyList(), // Сюда по очереди пишем выбранные ответы: {taskId, answerText}
+    val moneyEffectByPreviewsPeriod:Int = 0  //эффект изменение денег за предыдущий период
 )
 
 @Serializable
