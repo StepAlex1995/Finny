@@ -1,10 +1,13 @@
 package com.stepalex.finny.presentation.home
 
+import android.app.ActivityManager
+import android.app.Application
+import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.stepalex.finny.domain.model.FoodInventory
 import com.stepalex.finny.domain.model.GoalState
@@ -26,6 +29,7 @@ import com.stepalex.finny.domain.use_cases.period.GetCurrentTaskUseCase
 import com.stepalex.finny.domain.use_cases.period.GetHistoryByPeriodIdUseCase
 import com.stepalex.finny.domain.use_cases.period.StartNewPeriodUseCase
 import com.stepalex.finny.domain.use_cases.period.SubmitTaskAnswerUseCase
+import com.stepalex.finny.domain.use_cases.profile.CompleteGoalsUseCase
 import com.stepalex.finny.domain.use_cases.profile.GetGoalsUseCase
 import com.stepalex.finny.domain.use_cases.profile.GetProfileUseCase
 import com.stepalex.finny.domain.use_cases.profile.UpdateProfileUseCase
@@ -44,6 +48,7 @@ import kotlin.time.Duration.Companion.milliseconds
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
+    private val application: Application,
     private val getProfileUseCase: GetProfileUseCase,
     private val updateProfileUseCase: UpdateProfileUseCase,
     private val getGoalsUseCase: GetGoalsUseCase,
@@ -56,8 +61,9 @@ class HomeViewModel @Inject constructor(
     private val startNewPeriodUseCase: StartNewPeriodUseCase,
     private val submitTaskAnswerUseCase: SubmitTaskAnswerUseCase,
     private val getCurrentTaskUseCase: GetCurrentTaskUseCase,
-    private val getHistoryByPeriodIdUseCase: GetHistoryByPeriodIdUseCase
-) : ViewModel() {
+    private val getHistoryByPeriodIdUseCase: GetHistoryByPeriodIdUseCase,
+    private val completeGoalsUseCase: CompleteGoalsUseCase,
+) : AndroidViewModel(application) {
     private val _uiEvent = Channel<HomeUIEvent>()
     val uiEvent = _uiEvent.receiveAsFlow()
 
@@ -79,7 +85,7 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             val goals = getGoalsUseCase()
             val profile = getProfileUseCase()
-            if (profile == null) {
+            if (profile == null || profile.currentGoal == null) {
                 homeState = homeState.copy(openWindow = OpenWindow.Goals, goals = goals)
             } else {
                 homeState = homeState.copy(goals = goals, profile = profile)
@@ -145,6 +151,10 @@ class HomeViewModel @Inject constructor(
                 }
             }
 
+            is HomeEvent.DismissDialog -> {
+                homeState = homeState.copy(showDialog = ShowDialog.None)
+            }
+
             is HomeEvent.ShowHomeWindow -> {
                 homeState = homeState.copy(openWindow = OpenWindow.None)
             }
@@ -171,9 +181,9 @@ class HomeViewModel @Inject constructor(
                     showDialog = ShowDialog.None,
                     profile = Profile(
                         currentGoal = event.goal,
-                        countMoney = 100,
-                        countFood = 2,
-                        countMood = 3,
+                        countMoney = 0,
+                        countFood = 4,
+                        countMood = 4,
                         isSleep = false,
                         foodInventory = listOf(
                             FoodInventory(
@@ -234,7 +244,7 @@ class HomeViewModel @Inject constructor(
                                 itemColor = ItemColor.Red
                             ),
                         ),
-                        petStyle = PetStyle(PetType.BEAR, petColor = PetColorType.TeddyBear)
+                        petStyle = PetStyle(PetType.BUNNY, petColor = PetColorType.White)
                     )
                 )
             }
@@ -318,26 +328,37 @@ class HomeViewModel @Inject constructor(
             }
 
             is HomeEvent.CompleteStartTask -> {//Выполнил стартовую работу
-                viewModelScope.launch {
-                    //запоминание в преференс что начался период
-                    saveStartTaskCompletedUseCase(true)
-                    homeState = homeState.copy(periodState = InProgress(completedCount = 0))
+                if(!homeState.profile!!.showStartInfo){//Показать стартовую информацию
+                    val updatedProfile  = homeState.profile!!.copy(showStartInfo = true)
+                    viewModelScope.launch {
+                        updateProfileUseCase(updatedProfile)
+                    }
+                    homeState = homeState.copy(profile =  updatedProfile, showDialog = ShowDialog.StartInfo)
+                }else {
+                    viewModelScope.launch {
+                        //запоминание в преференс что начался период
+                        saveStartTaskCompletedUseCase(true)
+                        homeState = homeState.copy(periodState = InProgress(completedCount = 0))
 
-                    // Запускает период, применяет эффекты и генерирует задачи ОДНОВРЕМЕННО
-                    startNewPeriodUseCase().onSuccess { periodInfo ->  //(profile, effects) ->
-                        homeState = homeState.copy(
-                            profile = periodInfo.profile,
-                            appliedEffects = periodInfo.scheduledEffects,
-                            openWindow = OpenWindow.ShowStartPeriodInfo,
-                            //showEffectsDialog = periodInfo.scheduledEffects.isNotEmpty(),
-                            currentTask = periodInfo.currentTask
-                        )
-                        Log.i("TEST", "CURRENT TASKS: ${periodInfo.profile.currentPeriodTaskIds}")
-                        Log.i(
-                            "TEST",
-                            "CURRENT TASK number: ${periodInfo.profile.currentPeriodChoices.size}"
-                        )
-                        Log.i("TEST", "CURRENT TASK current : ${periodInfo.currentTask}")
+                        // Запускает период, применяет эффекты и генерирует задачи ОДНОВРЕМЕННО
+                        startNewPeriodUseCase().onSuccess { periodInfo ->  //(profile, effects) ->
+                            homeState = homeState.copy(
+                                profile = periodInfo.profile,
+                                appliedEffects = periodInfo.scheduledEffects,
+                                openWindow = OpenWindow.ShowStartPeriodInfo,
+                                //showEffectsDialog = periodInfo.scheduledEffects.isNotEmpty(),
+                                currentTask = periodInfo.currentTask
+                            )
+                            Log.i(
+                                "TEST",
+                                "CURRENT TASKS: ${periodInfo.profile.currentPeriodTaskIds}"
+                            )
+                            Log.i(
+                                "TEST",
+                                "CURRENT TASK number: ${periodInfo.profile.currentPeriodChoices.size}"
+                            )
+                            Log.i("TEST", "CURRENT TASK current : ${periodInfo.currentTask}")
+                        }
                     }
                 }
             }
@@ -369,22 +390,51 @@ class HomeViewModel @Inject constructor(
                     )
                 }
             }
+
             is HomeEvent.ShowPreviewsPeriodHistory -> {//Просмотреть историю предыдущего
                 viewModelScope.launch {
-                    val periodHistory = getHistoryByPeriodIdUseCase(homeState.periodHistory!!.periodIndex - 1).getOrNull()
+                    val periodHistory =
+                        getHistoryByPeriodIdUseCase(homeState.periodHistory!!.periodIndex - 1).getOrNull()
                     homeState = homeState.copy(
                         openWindow = OpenWindow.ShowPeriodHistory,
                         periodHistory = periodHistory
                     )
                 }
             }
+
             is HomeEvent.ShowNextPeriodHistory -> {//Просмотреть историю следующего периода
                 viewModelScope.launch {
-                    val periodHistory = getHistoryByPeriodIdUseCase(homeState.periodHistory!!.periodIndex + 1).getOrNull()
+                    val periodHistory =
+                        getHistoryByPeriodIdUseCase(homeState.periodHistory!!.periodIndex + 1).getOrNull()
                     homeState = homeState.copy(
                         openWindow = OpenWindow.ShowPeriodHistory,
                         periodHistory = periodHistory
                     )
+                }
+            }
+
+            is HomeEvent.ShowResetConfirmDialog -> {    //Показать окно с предупреждением о сбросе
+                homeState = homeState.copy(showDialog = ShowDialog.ResetConfirm)
+            }
+
+            is HomeEvent.ResetData -> { // Сброс данных для теста
+                viewModelScope.launch {
+                    val activityManager =
+                        application.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+                    activityManager.clearApplicationUserData()
+                }
+            }
+
+            is HomeEvent.ShowCompleteGoalDialog -> { // Показать диалог достижения цели
+                homeState = homeState.copy(showDialog = ShowDialog.CompleteGoal)
+            }
+
+            is HomeEvent.CompleteGoal -> { // достигнуть цели
+                viewModelScope.launch {
+                    val updatedProfile = completeGoalsUseCase().getOrNull()
+                    val goals = getGoalsUseCase()
+
+                    homeState = homeState.copy(showDialog = ShowDialog.None, openWindow = OpenWindow.Goals, goals = goals)
                 }
             }
         }

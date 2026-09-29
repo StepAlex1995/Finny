@@ -38,6 +38,7 @@ import com.stepalex.finny.domain.use_cases.period.GetHistoryByPeriodIdUseCase
 import com.stepalex.finny.domain.use_cases.period.StartNewPeriodUseCase
 import com.stepalex.finny.domain.use_cases.period.SubmitTaskAnswerUseCase
 import com.stepalex.finny.domain.use_cases.profile.CheckGoalsUseCase
+import com.stepalex.finny.domain.use_cases.profile.CompleteGoalsUseCase
 import com.stepalex.finny.domain.use_cases.profile.GetGoalsUseCase
 import com.stepalex.finny.domain.use_cases.profile.GetProfileUseCase
 import com.stepalex.finny.domain.use_cases.profile.UpdateProfileUseCase
@@ -273,6 +274,16 @@ object AppModule {
         return GetHistoryByPeriodIdUseCase(
             periodRepository = periodRepository,
             taskRepository = taskRepository,
+        )
+    }
+
+    @Provides
+    @Singleton
+    fun provideCompleteGoalsUseCase(
+        profileRepository: ProfileRepository,
+    ): CompleteGoalsUseCase {
+        return CompleteGoalsUseCase(
+            profileRepository = profileRepository
         )
     }
     

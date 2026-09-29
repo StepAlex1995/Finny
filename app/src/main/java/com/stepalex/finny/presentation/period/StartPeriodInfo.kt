@@ -239,6 +239,9 @@ fun StartPeriodInfoScreen(
                 cornerRadius = 18.dp,
                 onClick = {
                     event(HomeEvent.ShowHomeWindow)
+                    if (state.profile!!.countMoney >= state.profile.currentGoal!!.cost) {
+                        event(HomeEvent.ShowCompleteGoalDialog)
+                    }
                 }
             ) {
                 OutlineText("Понятно")

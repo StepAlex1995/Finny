@@ -43,6 +43,7 @@ import com.stepalex.finny.presentation.common.FinnyTickStyle
 import com.stepalex.finny.presentation.common.food.Carrot
 import com.stepalex.finny.presentation.common.icons.Gamepad
 import com.stepalex.finny.presentation.common.icons.Hourglass
+import com.stepalex.finny.presentation.common.icons.ResetButton
 import com.stepalex.finny.presentation.common.icons.ShoppingBasket
 import com.stepalex.finny.presentation.common.items.getPetItems
 import com.stepalex.finny.presentation.common.pets.Pet
@@ -110,7 +111,7 @@ fun PetRoom(modifier: Modifier, event: (HomeEvent) -> Unit, state: HomeState) {
                         )
                     }
                     FinnyProgressBar(
-                        progress = ((profile.countMoney.toFloat() / profile.currentGoal.cost.toFloat())),
+                        progress = ((profile.countMoney.toFloat() / profile.currentGoal!!.cost.toFloat())),
                         trackStyle = FinnyProgressStyle(
                             color = Color.LightGray, cornerRadius = 4.dp
                         ),
@@ -137,14 +138,14 @@ fun PetRoom(modifier: Modifier, event: (HomeEvent) -> Unit, state: HomeState) {
                             modifier = Modifier.size(10.dp),
                             petType = profile.petStyle.petType,
                             stage = PetStage.Baby,
-                            petColor = PetColor.CyberPurple,
+                            petColor = PetColor.CompletedGoal,
                         )
                         Silhouette(
                             modifier = Modifier.size(10.dp),
                             petType = profile.petStyle.petType,
                             stage = PetStage.Teenager,
                             petColor = if (profile.countMoney.toFloat() / profile.currentGoal.cost > 0.33) {
-                                PetColor.CyberPurple
+                                PetColor.CompletedGoal
                             } else PetColor.SilverGrey,
                         )
                         Silhouette(
@@ -152,7 +153,7 @@ fun PetRoom(modifier: Modifier, event: (HomeEvent) -> Unit, state: HomeState) {
                             petType = profile.petStyle.petType,
                             stage = PetStage.Adult,
                             petColor = if (profile.countMoney.toFloat() / profile.currentGoal.cost > 0.66) {
-                                PetColor.CyberPurple
+                                PetColor.CompletedGoal
                             } else PetColor.SilverGrey,
                         )
                         Start(modifier = Modifier.size(10.dp))
@@ -220,8 +221,8 @@ fun PetRoom(modifier: Modifier, event: (HomeEvent) -> Unit, state: HomeState) {
                     .align(alignment = Alignment.Center)
                     .padding(bottom = 50.dp),
                 stage = when {
-                    profile.countMoney.toFloat() / profile.currentGoal.cost < 0.33 -> PetStage.Baby
-                    profile.countMoney.toFloat() / profile.currentGoal.cost < 0.66 -> PetStage.Teenager
+                    profile.countMoney.toFloat() / profile.currentGoal!!.cost < 0.33 -> PetStage.Baby
+                    profile.countMoney.toFloat() / profile.currentGoal!!.cost < 0.66 -> PetStage.Teenager
                     else -> PetStage.Adult
                 },
                 mood = if (profile.isSleep) PetMood.Sleep else when {
@@ -285,24 +286,49 @@ fun PetRoom(modifier: Modifier, event: (HomeEvent) -> Unit, state: HomeState) {
                 animationSpec = tween(durationMillis = 300),
                 label = "IconSize"
             )
-           Hourglass(
-                modifier = Modifier
-                    .size(iconHourglassSize)
-                    .padding(top = 16.dp, end = 16.dp)
-                    .align(Alignment.TopEnd)
-                    .clickable {
-                        event(HomeEvent.ShowPeriodHistory(periodId = state.profile.currentPeriodIndex - 1))
-                    }
-            )
-
-            // --- Кнопки внизу комнаты ---
+            // --- Кнопки внизу комнаты и сброса ---
             val isVisible = state.openWindow == OpenWindow.None
             val downIconSize by animateDpAsState(
                 targetValue = if (isVisible) 56.dp else 0.dp,
                 animationSpec = tween(durationMillis = 300),
                 label = "IconSize"
             )
+            /*Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    //.padding(horizontal = 16.dp)
+            ) {*/
+            Column(modifier = Modifier.fillMaxSize()) {
+                Spacer(modifier = Modifier.fillMaxHeight(0.59f))
 
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                ) {
+                    ResetButton(
+                        modifier = Modifier
+                            .size(downIconSize)
+                            .padding(top = 16.dp, start = 16.dp)
+                            .align(Alignment.TopStart)
+                            .clickable {
+                                event(HomeEvent.ShowResetConfirmDialog)
+                            }
+                    )
+
+                    Hourglass(
+                        modifier = Modifier
+                            .size(iconHourglassSize)
+                            .padding(top = 16.dp, end = 16.dp)
+                            .align(Alignment.TopEnd)
+                            .clickable {
+                                event(HomeEvent.ShowPeriodHistory(periodId = state.profile.currentPeriodIndex - 1))
+                            }
+                    )
+                }
+            }
+
+/*
             Column(modifier = Modifier.fillMaxSize()) {
                 Spacer(modifier = Modifier.fillMaxHeight(0.59f))
 
@@ -323,7 +349,7 @@ fun PetRoom(modifier: Modifier, event: (HomeEvent) -> Unit, state: HomeState) {
                             .size(downIconSize)
                     )
                 }
-            }
+            }*/
         }
 
     }

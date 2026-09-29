@@ -210,7 +210,7 @@ fun CreatePetScreen(
                 modifier = Modifier
                     .size(300.dp)
                     .align(alignment = Alignment.Center),
-                stage = PetStage.Adult,
+                stage = PetStage.Baby,
                 mood = PetMood.Normal,
                 action = PetAction.Play,
                 touchOffset = null,

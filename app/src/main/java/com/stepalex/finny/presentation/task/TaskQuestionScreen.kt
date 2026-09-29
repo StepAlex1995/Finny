@@ -239,7 +239,7 @@ fun TaskAnswersScreen(
             state.currentTask!!.answers.forEach { answer ->
                 GameButton(
                     size = DpSize(1000.dp, 64.dp),
-                    colorBgr = Color(91, 222, 249),
+                    colorBgr = Color(214, 199, 255),
                     sizeBorder = 2.dp,
                     colorBorder = Color.Black,
                     cornerRadius = 18.dp,

@@ -5,7 +5,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.dialog
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import com.stepalex.finny.presentation.home.HomeScreen
@@ -23,12 +22,15 @@ fun NavGraph(startDestination: String) {
         ) {
             composable(route = Route.SplashScreen.route) {
                 val viewModel: SplashViewModel = hiltViewModel()
-                SplashScreen(onSyncComplete = {
-                    navController.navigate(Route.HomeNavigation.route) {
-                        // Удаляем SplashNavigation и всё, что внутри него, из истории
-                        popUpTo(Route.SplashNavigation.route) { inclusive = true }
-                    }
-                }, viewModel = viewModel)
+                SplashScreen(
+                    onSyncComplete = {
+                        navController.navigate(Route.HomeNavigation.route) {
+                            // Удаляем SplashNavigation и всё, что внутри него, из истории
+                            popUpTo(Route.SplashNavigation.route) { inclusive = true }
+                        }
+                    },
+                    viewModel = viewModel,
+                )
             }
         }
 

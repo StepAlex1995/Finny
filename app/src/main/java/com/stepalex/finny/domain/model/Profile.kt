@@ -5,8 +5,9 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Profile(
+    val showStartInfo: Boolean = false,
     val currentPeriodIndex: Int = 1,
-    val currentGoal: Goal,
+    val currentGoal: Goal?,
     val countMoney: Int,
     val countFood: Int,
     val countMood: Int,
@@ -17,7 +18,7 @@ data class Profile(
     // Поля для сохранения состояния раунда:
     val currentPeriodTaskIds: List<Long> = emptyList(), // ID 5 задач, сгенерированных на этот период
     val currentPeriodChoices: List<HistoryChoice> = emptyList(), // Сюда по очереди пишем выбранные ответы: {taskId, answerText}
-    val moneyEffectByPreviewsPeriod:Int = 0  //эффект изменение денег за предыдущий период
+    val moneyEffectByPreviewsPeriod: Int = 0  //эффект изменение денег за предыдущий период
 )
 
 @Serializable
@@ -28,7 +29,7 @@ data class PetStyle(
 
 @Serializable
 enum class PetColorType {
-    White, Peach, Chocolate, CuberPurple, Tangerine, Aqua, Indigo, TeddyBear
+    White, Peach, Chocolate, /*CuberPurple,*/ Tangerine, Aqua, Indigo, TeddyBear
 }
 
 @Serializable

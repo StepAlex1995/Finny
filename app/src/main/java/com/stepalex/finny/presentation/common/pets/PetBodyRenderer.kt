@@ -64,7 +64,7 @@ fun DrawScope.drawPetBodyAndEars(
     val rightInnerEarPath = Path()
 
     // Настраиваем цвет внутренностей ушей мишки (Индивидуальный приятный оттенок без розового!)
-    val bearInnerEarColor = Color(0xFFC6BCB4)
+    val bearInnerEarColor = petColor.bearEarsColor//Color(0xFFC6BCB4)
     val finalInnerEarColor =
         if (petType == PetType.BUNNY) petColor.blushColor else bearInnerEarColor
 

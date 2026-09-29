@@ -12,6 +12,7 @@ import com.stepalex.finny.domain.model.TaskAnswer
 sealed class HomeEvent {
     //data class OpenQuiz(val taskId: Int) : HomeEvent()
     object ShowHomeWindow : HomeEvent()
+    object DismissDialog : HomeEvent()
     data class OnGoalClick(val goal: Goal) : HomeEvent()
     data class SelectGoal(val goal: Goal) : HomeEvent()
     object ClearSelectGoal : HomeEvent()
@@ -41,6 +42,13 @@ sealed class HomeEvent {
     data class ShowPeriodHistory(val periodId: Int) : HomeEvent()  //показать результаты по периодам
     data object ShowPreviewsPeriodHistory : HomeEvent()  //показать результаты Предыдущему периоду
     data object ShowNextPeriodHistory : HomeEvent()  //показать результаты Следующему периоду
+
+
+    data object ShowResetConfirmDialog : HomeEvent()  //Показать окно с предупреждением о сбросе
+    data object ResetData : HomeEvent()  //Полный сброс всех данных для теста
+
+    data object ShowCompleteGoalDialog : HomeEvent()  //Показать диалог о достижении цели
+    data object CompleteGoal : HomeEvent()  //Обновляем информацию о достижении цели
 }
 
 data class HomeState(
@@ -71,7 +79,7 @@ enum class OpenWindow {
 }
 
 enum class ShowDialog {
-    None, SelectGoal, SelectPet
+    None, SelectGoal, SelectPet,ResetConfirm,CompleteGoal,StartInfo
 }
 
 // Состояние периода

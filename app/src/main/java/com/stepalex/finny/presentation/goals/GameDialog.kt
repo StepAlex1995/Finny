@@ -64,7 +64,7 @@ fun GameDialogAnimatable(event: ((HomeEvent) -> Unit), state: HomeState) {
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null // Убираем стандартный эффект волны (ripple) при клике на фон
                 ) {
-                    event(HomeEvent.ClearSelectGoal)
+                   // event(HomeEvent.ClearSelectGoal)
                 },
             contentAlignment = Alignment.Center
         ) {
@@ -87,7 +87,7 @@ fun GameDialogAnimatable(event: ((HomeEvent) -> Unit), state: HomeState) {
                         GameButton(
                             size = DpSize(120.dp, 48.dp),
                             colorBgr = Color(0xFFE2E2E2),
-                            colorBorder = Color.Black,
+                            colorBorder = Color.DarkGray,
                             sizeBorder = 2.dp,
                             cornerRadius = 14.dp,
                             //  text = "Отмена",
@@ -102,7 +102,7 @@ fun GameDialogAnimatable(event: ((HomeEvent) -> Unit), state: HomeState) {
                             size = DpSize(140.dp, 48.dp),
                             colorBgr = Color(0xFFFFD54F),
                             colorBorder = Color.Black,
-                            sizeBorder = 3.dp,
+                            sizeBorder = 2.5.dp,
                             cornerRadius = 14.dp,
                             //text = "Начать",
                             typeGlare = TypeGlare.TWO,
@@ -121,6 +121,7 @@ fun GameDialogAnimatable(event: ((HomeEvent) -> Unit), state: HomeState) {
 fun GameDialog(
     title: String,
     text: String,
+    isOneBtn: Boolean = false,
     positiveBtn: @Composable () -> Unit,
     negativeBtn: @Composable () -> Unit,
 ) {
@@ -134,7 +135,7 @@ fun GameDialog(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .border(3.dp, Color.Black, RoundedCornerShape(28.dp)) // Жирный игровой контур
+                .border(2.dp, Color.Black, RoundedCornerShape(28.dp)) // Жирный игровой контур
                 .clip(RoundedCornerShape(28.dp))
                 .background(DialogBg)
                 .padding(20.dp),
@@ -166,20 +167,24 @@ fun GameDialog(
             Spacer(modifier = Modifier.height(24.dp))
 
             // --- КНОПКИ ДЕЙСТВИЯ ---
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Обернем каждую кнопку в weight(1f), чтобы они делили место поровну
-                Row(modifier = Modifier.weight(1f)) {
-                    negativeBtn()
-                }
+            if(isOneBtn) {
+                positiveBtn()
+            }else {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Обернем каждую кнопку в weight(1f), чтобы они делили место поровну
+                    Row(modifier = Modifier.weight(1f)) {
+                        negativeBtn()
+                    }
 
-                Spacer(modifier = Modifier.width(12.dp))
+                    Spacer(modifier = Modifier.width(12.dp))
 
-                Row(modifier = Modifier.weight(1f)) {
-                    positiveBtn()
+                    Row(modifier = Modifier.weight(1f)) {
+                        positiveBtn()
+                    }
                 }
             }
         }
@@ -209,7 +214,7 @@ fun GameDialogPreview() {
                     //text = "Отмена",
                     typeGlare = TypeGlare.NONE, // Для нейтральной кнопки можно отключить блик
                     onClick = { /* закрыть диалог */ }
-                ){
+                ) {
                     OutlineText("Отмена")
                 }
             },
@@ -223,7 +228,7 @@ fun GameDialogPreview() {
                     //text = "Открыть",
                     typeGlare = TypeGlare.TWO, // Сочный двойной блик
                     onClick = { /* логика списания монет */ }
-                ){
+                ) {
                     OutlineText("Открыть")
                 }
             }

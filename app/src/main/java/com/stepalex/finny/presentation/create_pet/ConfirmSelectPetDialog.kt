@@ -65,7 +65,7 @@ fun ConfirmSelectPetDialogAnimatable(event: ((HomeEvent) -> Unit), state: HomeSt
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null // Убираем стандартный эффект волны (ripple) при клике на фон
                 ) {
-                    event(HomeEvent.ClearSelectGoal)
+                    //event(HomeEvent.ClearSelectGoal)
                 },
             contentAlignment = Alignment.Center
         ) {
@@ -103,7 +103,7 @@ fun ConfirmSelectPetDialogAnimatable(event: ((HomeEvent) -> Unit), state: HomeSt
                             size = DpSize(140.dp, 48.dp),
                             colorBgr = Color(0xFFFFD54F),
                             colorBorder = Color.Black,
-                            sizeBorder = 3.dp,
+                            sizeBorder = 2.5.dp,
                             cornerRadius = 14.dp,
                             //text = "Готов!",
                             typeGlare = TypeGlare.TWO,
@@ -135,7 +135,7 @@ fun ConfirmSelectPetDialog(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .border(3.dp, Color.Black, RoundedCornerShape(28.dp)) // Жирный игровой контур
+                .border(2.dp, Color.Black, RoundedCornerShape(28.dp)) // Жирный игровой контур
                 .clip(RoundedCornerShape(28.dp))
                 .background(DialogBg)
                 .padding(20.dp),

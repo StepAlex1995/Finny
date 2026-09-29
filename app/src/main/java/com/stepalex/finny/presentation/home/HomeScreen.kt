@@ -12,7 +12,9 @@ import com.stepalex.finny.presentation.create_pet.ConfirmSelectPetDialogAnimatab
 import com.stepalex.finny.presentation.create_pet.CreatePetScreenAnimatable
 import com.stepalex.finny.presentation.goals.GameDialogAnimatable
 import com.stepalex.finny.presentation.goals.GoalScreenAnimatable
+import com.stepalex.finny.presentation.period.CompleteGoalDialogAnimatable
 import com.stepalex.finny.presentation.period.PeriodResultScreenAnimatable
+import com.stepalex.finny.presentation.period.ResetConfirmDialogAnimatable
 import com.stepalex.finny.presentation.period.StartPeriodInfoScreenAnimatable
 import com.stepalex.finny.presentation.pet_room.PetRoom
 import com.stepalex.finny.presentation.pet_room_bgr.PetRoomBgr
@@ -34,6 +36,10 @@ fun HomeScreen(event: ((HomeEvent) -> Unit), state: HomeState) {
         ResultTaskScreenAnimatable(event, state)
         StartPeriodInfoScreenAnimatable(event,state)
         PeriodResultScreenAnimatable(event,state)
+
+        CompleteGoalDialogAnimatable(event,state)
+        ResetConfirmDialogAnimatable(event,state)
+        StartInfoDialogAnimatable(event,state)
 
         GoalScreenAnimatable(event, state)
         GameDialogAnimatable(event, state)

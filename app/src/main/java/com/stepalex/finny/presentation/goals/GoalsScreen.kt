@@ -61,8 +61,9 @@ fun GoalScreenAnimatable(event: ((HomeEvent) -> Unit), state: HomeState) {
         ) + fadeOut(animationSpec = tween(durationMillis = 250))
     ) {
         GoalsScreen(
-            state.goals,
-            state.profile,
+            //state.goals,
+            //state.profile,
+            state = state,
             modifier = Modifier.fillMaxSize(),
             onClose = { event(HomeEvent.ShowHomeWindow) },
             onGoalClick = { goal -> event(HomeEvent.OnGoalClick(goal)) })
@@ -71,8 +72,9 @@ fun GoalScreenAnimatable(event: ((HomeEvent) -> Unit), state: HomeState) {
 
 @Composable
 fun GoalsScreen(
-    goals: List<Goal>,
-    profile: Profile?,
+    //goals: List<Goal>,
+    //profile: Profile?,
+    state: HomeState,
     modifier: Modifier,
     onGoalClick: (Goal) -> Unit,
     onClose: () -> Unit
@@ -131,7 +133,7 @@ fun GoalsScreen(
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    text = "" + (profile?.countMood ?: 100),
+                    text = "" + (state.profile?.countMoney ?: 0),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Black,
                     color = GameTextDark
@@ -144,16 +146,16 @@ fun GoalsScreen(
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .fillMaxHeight(if (profile == null) 0.9f else 1f),
+                    .fillMaxHeight(if (state.profile == null) 0.9f else 1f),
                 verticalArrangement = Arrangement.spacedBy(16.dp) // Отступы между карточками игр
             ) {
-                items(items = goals, key = { goal -> goal.name }) { goal ->
+                items(items = state.goals, key = { goal -> goal.name }) { goal ->
                     GoalCardItem(goal = goal) {
                         onGoalClick(goal)
                     }
                 }
             }
-            if (profile == null) {
+            if (state.profile != null) {
                 GameButton(
                     size = DpSize(128.dp, 64.dp),
                     colorBgr = Color(249, 222, 91),
@@ -174,7 +176,7 @@ fun GoalsScreen(
 @Preview
 @Composable
 fun GoalsScreenPreview() {
-    val defaultGoals = listOf(
+    /*val defaultGoals = listOf(
         Goal(
             name = "Хочу или надо",
             description = "Кто-то перемешал все хотелки и нужды. Распредели все по местам и получи монетки!",
@@ -198,8 +200,8 @@ fun GoalsScreenPreview() {
         )
     )
     GoalsScreen(
-        goals = defaultGoals,
-        profile = null,
+        //goals = defaultGoals,
+        //profile = null,
         modifier = Modifier.fillMaxSize(),
-        onGoalClick = {}) { }
+        onGoalClick = {}) { }*/
 }

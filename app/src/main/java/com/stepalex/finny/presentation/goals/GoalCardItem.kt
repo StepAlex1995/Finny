@@ -36,6 +36,7 @@ import com.stepalex.finny.domain.model.Goal
 import com.stepalex.finny.domain.model.GoalState
 import com.stepalex.finny.domain.model.GoalType
 import com.stepalex.finny.presentation.pet_room_bgr.Money
+import com.stepalex.finny.utils.Fonts.RegularTextFontFamily
 
 @Composable
 fun GoalCardItem(goal: Goal, onClick: () -> Unit) {
@@ -70,7 +71,7 @@ fun GoalCardItem(goal: Goal, onClick: () -> Unit) {
                 scaleY = scale
                 this.translationY = translationY.dp.toPx()
             }
-            .border(3.dp, Color.Black, RoundedCornerShape(24.dp))
+            .border(2.dp, Color.DarkGray, RoundedCornerShape(24.dp))
             .clip(RoundedCornerShape(24.dp))
             // Если игра недоступна, делаем карточку слегка прозрачной
             .background(if (isAvailable) GameCardBg else GameCardBg.copy(alpha = 0.6f))
@@ -95,7 +96,7 @@ fun GoalCardItem(goal: Goal, onClick: () -> Unit) {
         Box(
             modifier = Modifier
                 .size(80.dp)
-                .border(3.dp, Color.Black, RoundedCornerShape(16.dp))
+                .border(2.dp, Color.DarkGray, RoundedCornerShape(16.dp))
                 .clip(RoundedCornerShape(16.dp))
                 // Здесь будет ваша картинка (Image). Пока сделаем цветной плейсхолдер
                 .background(if (isAvailable) Color(0xFFFFD54F) else GameProgressBarBg),
@@ -117,8 +118,9 @@ fun GoalCardItem(goal: Goal, onClick: () -> Unit) {
             Text(
                 text = goal.name,
                 fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = if (isAvailable) GameTextDark else Color.Gray
+                fontWeight = FontWeight.Normal,
+                color = if (isAvailable) GameTextDark else Color.Gray,
+                fontFamily = RegularTextFontFamily
             )
 
             goal.description?.let { desc ->
@@ -144,7 +146,7 @@ fun GoalCardItem(goal: Goal, onClick: () -> Unit) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
-                            .border(2.dp, Color.Black, RoundedCornerShape(8.dp))
+                            .border(1.dp, Color.DarkGray, RoundedCornerShape(8.dp))
                             .background(Color(0xFFFFFDF6))
                             .padding(horizontal = 6.dp, vertical = 2.dp)
                     ) {
