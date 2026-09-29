@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Button
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -284,7 +285,7 @@ fun PetRoom(modifier: Modifier, event: (HomeEvent) -> Unit, state: HomeState) {
                 animationSpec = tween(durationMillis = 300),
                 label = "IconSize"
             )
-            Hourglass(
+           Hourglass(
                 modifier = Modifier
                     .size(iconHourglassSize)
                     .padding(top = 16.dp, end = 16.dp)

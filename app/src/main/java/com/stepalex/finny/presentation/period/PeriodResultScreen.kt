@@ -12,6 +12,7 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -105,11 +106,22 @@ fun PeriodResultScreen(
         ) {
             // 1. Создаем и запоминаем состояние списка
             val listState = rememberLazyListState()
+            var isHistoryVisible by remember { mutableStateOf(false) } // Состояние раскрытия всей истории
+            LaunchedEffect(key1 = state.periodHistory) {
+                isHistoryVisible = false
+            }
 
             // 2. Отслеживаем изменение конкретного поля в state (например, id периода или сам список)
-            LaunchedEffect(key1 = state.periodHistory) {
+            LaunchedEffect(key1 = state.periodHistory, isHistoryVisible) {
                 // Если история обновилась и она не пустая, плавно или мгновенно скроллим вверх
-                listState.animateScrollToItem(index = 0)
+                if (isHistoryVisible) {
+                    repeat(4) {
+                        kotlinx.coroutines.delay(10) // шаг анимации
+                        listState.animateScrollToItem(index = 4, scrollOffset = 10000)
+                    }
+                } else {
+                    listState.animateScrollToItem(index = 0)
+                }
             }
             LazyColumn(
                 modifier = Modifier
@@ -314,7 +326,6 @@ fun PeriodResultScreen(
 
                 // 4. КНОПКА-СПОЙЛЕР ДЛЯ РАЗВЕРТЫВАНИЯ ИСТОРИИ РЕШЕНИЙ
                 item {
-                    var isHistoryVisible by remember { mutableStateOf(false) } // Состояние раскрытия всей истории
 
                     Spacer(modifier = Modifier.height(8.dp))
                     HorizontalDivider(color = Color(0xFFEFF1F4), thickness = 2.dp)
@@ -380,7 +391,9 @@ fun PeriodResultScreen(
 
         // КНОПКА ЗАВЕРШЕНИЯ: ОТПРАВЛЯЕТ СОБЫТИЕ ДЛЯ ПЕРЕХОДА НА ТАЙМЕР / СЛЕДУЮЩИЙ ШАГ
         Row(
-            modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 24.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -395,7 +408,7 @@ fun PeriodResultScreen(
                 ) {
                     OutlineText("<", fontSize = 36.sp)
                 }
-            }else{
+            } else {
                 Spacer(modifier = Modifier.width(60.dp))
             }
             GameButton(
@@ -421,7 +434,7 @@ fun PeriodResultScreen(
                 ) {
                     OutlineText(">", fontSize = 36.sp)
                 }
-            }else{
+            } else {
                 Spacer(modifier = Modifier.width(60.dp))
             }
         }

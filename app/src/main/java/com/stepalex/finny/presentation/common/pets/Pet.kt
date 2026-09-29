@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -19,6 +20,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameMillis
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Matrix
@@ -609,13 +611,15 @@ fun PetRoundRect1Preview() {
     }
 }
 
-@Preview(showBackground = true, widthDp = 400, heightDp = 400)
+@Preview(showBackground = true, widthDp = 4000, heightDp = 4000)
 @Composable
 fun PetRoundRect2Preview() {
     Pet(
-        stage = PetStage.Adult,
+        modifier = Modifier.padding(bottom = 506.dp),
+        stage = PetStage.Baby,
         mood = PetMood.Happy,
         touchOffset = null,
+        petType = PetType.BUNNY,
         petItems = null,
         petListener = object : PetListener {
             override fun updatePetMod(newMode: PetMood) {
